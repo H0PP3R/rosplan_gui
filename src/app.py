@@ -8,8 +8,8 @@ class App():
     root = Tk()
     root.geometry(f'{ROOT_SIZE[0]}x{ROOT_SIZE[1]}')
 
-    # self.toggleFrame(root)
-    self.collapsiblePane(root)
+    self.toggleFrame(root)
+    # self.collapsiblePane(root)
 
     root.mainloop()
   
