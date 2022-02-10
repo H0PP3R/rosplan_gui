@@ -2,27 +2,24 @@
 
 from __future__ import print_function
 import sys
+sys.path.append('/home/rabeden/PRJ/ROSPlan/src/rosplan')
+from rosplan_knowledge_msgs.srv import GetDomainAttributeService
+# from rosplan.rosplan_knowledge_msgs.msg import DomainFormula
+# import rosplan
 import rospy
-from service_node.srv import *
 
-def getKBStateClient(x,y):
-  rospy.wait_for_service('getKBState')
-  try:
-    getKBState = rospy.ServiceProxy('getKBState', getKBState)
-    resp1 = getKBState(x, y)
-    return resp1.sum
-  except rospy.ServiceException as e:
-    print(f'Service call failed: {e}')
+class KnowledgeBaseNode():
+  def __init__(self):
+    rospy.loginfo("Waiting for service")
+    rospy.wait_for_service('rosplan_knowledge_base')
+    self.getKBStateClient()
 
-def usage():
-  return "%s [x y]"%sys.argv[0]
+  def getKBStateClient(self):
+    try:
+      getKBState = rospy.ServiceProxy('/rosplan_knowledge_base/domain/predicates', None)
+      return getKBState
+    except rospy.ServiceException as e:
+      print(f'Service call failed: {e}')
 
 if __name__ == "__main__":
-  if len(sys.argv) == 3:
-    x = int(sys.argv[1])
-    y = int(sys.argv[2])
-  else:
-    print(usage())
-    sys.exit(1)
-  print(f'Requesting {x}+{y}')
-  print(f'{x} + {y} = {getKBStateClient(x,y)}')
+  print(f'predicates = {KnowledgeBaseNode.getKBStateClient()}')
