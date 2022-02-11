@@ -30,6 +30,7 @@ class TablePane(ttk.Frame):
       self.table.column(self.headings[i], anchor=TABLE_STYLING["ANCHOR"], width=80)
     for i in range(len(self.headings)):
       self.table.heading(self.headings[i], text=str(self.headings[i]), anchor=TABLE_STYLING["ANCHOR"])
-    for i in range(1, len(self.data)):
-        self.table.insert(parent='',index='end',iid=i, text='',
-          values=(tuple(self.data[i])))
+    if len(self.data) > 1:
+      for i in range(1, len(self.data)):
+          self.table.insert(parent='',index='end',iid=i, text='',
+            values=(tuple(self.data[i])))
