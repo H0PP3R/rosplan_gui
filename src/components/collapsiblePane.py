@@ -1,76 +1,30 @@
-# https://www.geeksforgeeks.org/collapsible-pane-in-tkinter-python/
-# Implementation of Collapsible Pane container
-
-# importing tkinter and ttk modules
+# https://stackoverflow.com/questions/13141259/expandable-and-contracting-frame-in-tkinter
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk 
 
-class CollapsiblePane(ttk.Frame):
-	"""
-	-----USAGE-----
-	collapsiblePane = CollapsiblePane(parent,
-						expanded_text =[string],
-						collapsed_text =[string])
+class ToggledFrame(tk.Frame):
 
-	collapsiblePane.pack()
-	button = Button(collapsiblePane.frame).pack()
-	"""
+  def __init__(self, parent, text="", *args, **options):
+    tk.Frame.__init__(self, parent, *args, **options)
 
-	def __init__(self, parent, expanded_text ="Collapse <<",
-							collapsed_text ="Expand >>"):
+    self.show = tk.IntVar()
+    self.show.set(0)
 
-		ttk.Frame.__init__(self, parent)
+    self.title_frame = ttk.Frame(self)
+    self.title_frame.pack(fill="x", expand=1)
 
-		# These are the class variable
-		# see a underscore in expanded_text and _collapsed_text
-		# this means these are private to class
-		self.parent = parent
-		self._expanded_text = expanded_text
-		self._collapsed_text = collapsed_text
+    ttk.Label(self.title_frame, text=text).pack(side="left", fill="x", expand=1)
 
-		# Here weight implies that it can grow it's
-		# size if extra space is available
-		# default weight is 0
-		self.columnconfigure(1, weight = 1)
+    self.toggle_button = ttk.Checkbutton(self.title_frame, width=2, text='+', command=self.toggle,
+                                        variable=self.show, style='Toolbutton')
+    self.toggle_button.pack(side="left")
 
-		# Tkinter variable storing integer value
-		self._variable = tk.IntVar()
+    self.sub_frame = tk.Frame(self, relief="sunken", borderwidth=1)
 
-		# Checkbutton is created but will behave as Button
-		# cause in style, Button is passed
-		# main reason to do this is Button do not support
-		# variable option but checkbutton do
-		self._button = ttk.Checkbutton(self, variable = self._variable,
-							command = self._activate, style ="TButton")
-		self._button.grid(row = 0, column = 0)
-
-		# This wil create a separator
-		# A separator is a line, we can also set thickness
-		self._separator = ttk.Separator(self, orient ="horizontal")
-		self._separator.grid(row = 0, column = 1, sticky ="we")
-
-		self.frame = ttk.Frame(self)
-
-		# This will call activate function of class
-		self._activate()
-
-	def _activate(self):
-		if not self._variable.get():
-
-			# As soon as button is pressed it removes this widget
-			# but is not destroyed means can be displayed again
-			self.frame.grid_forget()
-
-			# This will change the text of the checkbutton
-			self._button.configure(text = self._collapsed_text)
-
-		elif self._variable.get():
-			# increasing the frame area so new widgets
-			# could reside in this container
-			self.frame.grid(row = 1, column = 0, columnspan = 2)
-			self._button.configure(text = self._expanded_text)
-
-	def toggle(self):
-		"""Switches the label frame to the opposite state."""
-		self._variable.set(not self._variable.get())
-		self._activate()
+  def toggle(self):
+    if bool(self.show.get()):
+      self.sub_frame.pack(fill="x", expand=1)
+      self.toggle_button.configure(text='-')
+    else:
+      self.sub_frame.forget()
+      self.toggle_button.configure(text='+')
