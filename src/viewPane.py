@@ -16,6 +16,8 @@ class ViewPane():
 
     # creating and populating predicate panes
     predicateData = self.KB.getPredicates()
+    numPredicateData = self.KB.getNumPredicates()
+    predicateData.update(numPredicateData)
     predicatesPane = self._createPredicatePanes(viewPane, predicateData)
     predicatesPane.pack(fill='x')
 

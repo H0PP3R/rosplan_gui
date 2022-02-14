@@ -1,26 +1,27 @@
-#!/usr/bin/env python
-
-from __future__ import print_function
-import sys
-# sys.path.append('/home/rabeden/PRJ/ROSPlan/src/rosplan')
 from rosplan_knowledge_msgs.srv import GetDomainAttributeService
 import rospy
-# from prettytable import PrettyTable
 
 class KnowledgeBaseNode():
   def __init__(self):
     rospy.loginfo("Waiting for service")
-    rospy.wait_for_service('/rosplan_knowledge_base/domain/predicates')
+    basePath = """/rosplan_knowledge_base/domain"""
+    servicePaths = {
+      "predicates": f"{basePath}/predicates",
+      "functions": f"{basePath}/functions"
+    }
+    rospy.wait_for_service(servicePaths["predicates"])
+    rospy.wait_for_service(servicePaths["functions"])
     try:
-      self.getKBState = rospy.ServiceProxy('/rosplan_knowledge_base/domain/predicates', GetDomainAttributeService)
+      self.getKBPredicates = rospy.ServiceProxy(servicePaths["predicates"], GetDomainAttributeService)
+      self.getKBNumPredicates = rospy.ServiceProxy(servicePaths["functions"], GetDomainAttributeService)
     except rospy.ServiceException as e:
       print(f'Service call failed: {e}')
     
   def getPredicates(self):
-    resp = self.getKBState().items
-    return self._parsePredicateResponse(resp)
+    resp = self.getKBPredicates().items
+    return self._parseResponse(resp)
 
-  def _parsePredicateResponse(self, resp):
+  def _parseResponse(self, resp):
     result = {}
     for i in range(len(resp)):
       crntPredicate = resp[i]
@@ -30,3 +31,12 @@ class KnowledgeBaseNode():
           result[crntPredicate.name] = {}
         result[crntPredicate.name][item.key] = item.value
     return result
+  
+  def getNumPredicates(self):
+    resp = self.getKBNumPredicates().items
+    return self._parseResponse(resp)
+
+if __name__ == '__main__':
+  x = KnowledgeBaseNode()
+  print(f'predicates:\n{x.getPredicates()}')
+  print(f'functions:\n{x.getNumPredicates()}')
