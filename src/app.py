@@ -1,8 +1,6 @@
-from tkinter import Tk, ttk
+from tkinter import Tk
 from components.collapsiblePane import ToggledFrame as cp
 from styling import *
-from scripts.KB_CRUD import KnowledgeBaseNode
-from components.tablePane import TablePane
 from viewPane import ViewPane
 
 class App():
