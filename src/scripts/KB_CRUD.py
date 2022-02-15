@@ -1,19 +1,20 @@
-from rosplan_knowledge_msgs.srv import GetDomainAttributeService
+from rosplan_knowledge_msgs.srv import GetDomainAttributeService, GetAttributeService
 import rospy
 
 class KnowledgeBaseNode():
   def __init__(self):
     rospy.loginfo("Waiting for service")
-    basePath = """/rosplan_knowledge_base/domain"""
-    servicePaths = {
-      "predicates": f"{basePath}/predicates",
-      "functions": f"{basePath}/functions"
+    basePath = """/rosplan_knowledge_base"""
+    self.servicePaths = {
+      "predicates": f"{basePath}/domain/predicates",
+      "functions": f"{basePath}/domain/functions",
+      "propositions": f"{basePath}/state/propositions"
     }
-    rospy.wait_for_service(servicePaths["predicates"])
-    rospy.wait_for_service(servicePaths["functions"])
+    rospy.wait_for_service(self.servicePaths["predicates"])
+    rospy.wait_for_service(self.servicePaths["functions"])
     try:
-      self.getKBPredicates = rospy.ServiceProxy(servicePaths["predicates"], GetDomainAttributeService)
-      self.getKBNumPredicates = rospy.ServiceProxy(servicePaths["functions"], GetDomainAttributeService)
+      self.getKBPredicates = rospy.ServiceProxy(self.servicePaths["predicates"], GetDomainAttributeService)
+      self.getKBNumPredicates = rospy.ServiceProxy(self.servicePaths["functions"], GetDomainAttributeService)
     except rospy.ServiceException as e:
       print(f'Service call failed: {e}')
     
@@ -36,7 +37,18 @@ class KnowledgeBaseNode():
     resp = self.getKBNumPredicates().items
     return self._parseResponse(resp)
 
+  def getPropositions(self):
+    rospy.wait_for_service(self.servicePaths["propositions"])
+    try:
+      self.getKBPropositions = rospy.ServiceProxy(self.servicePaths["propositions"], GetAttributeService)
+    except rospy.ServiceException as e:
+      print(f'Service call failed: {e}')
+    resp = self.getKBPropositions().attributes
+    print(f'resp: {resp}')
+    return resp
+
 if __name__ == '__main__':
   x = KnowledgeBaseNode()
-  print(f'predicates:\n{x.getPredicates()}')
-  print(f'functions:\n{x.getNumPredicates()}')
+  # print(f'predicates:\n{x.getPredicates()}')
+  # print(f'functions:\n{x.getNumPredicates()}')
+  print(f'propositions:\n{x.getPropositions()}')
