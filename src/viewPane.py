@@ -18,25 +18,27 @@ class ViewPane():
     predicateData = self.KB.getPredicates()
     numPredicateData = self.KB.getNumPredicates()
     predicateData.update(numPredicateData)
-    predicatesPane = self._createPredicatePanes(viewPane, predicateData)
+    tableData = self.KB.getPropositions()
+    predicatesPane = self._createPredicatePanes(viewPane, predicateData, tableData)
     predicatesPane.pack(fill='x')
 
     viewPane.pack(fill="x")
     # vScroll.configure(command=predicatesPane.yview)
   
-  def _createPredicatePanes(self, parent, data):
-    predParameters = list(data.values())
+  def _createPredicatePanes(self, parent, predicateData, tableData):
+    predNames = list(predicateData.keys())
+    predParameters = list(predicateData.values())
     predicatesPane = ttk.Frame(parent)
 
-    predicateHeaders = self._createPredicateHeaders(data)
-    for i in range(len(data)):
+    predicateHeaders = self._createPredicateHeaders(predNames, predParameters)
+    for i in range(len(predicateData)):
       cp = self._createCollapsiblePane(predicatesPane, predicateHeaders[i])
-      TablePane(cp.sub_frame, self._parseTableData(predParameters[i]))
+      # Parse current predicate propositional data and show as a table
+      crntTableData = self._parseTableData(tableData, predNames[i], predParameters[i])
+      TablePane(cp.sub_frame, crntTableData)
     return predicatesPane
 
-  def _createPredicateHeaders(self, data):
-    predNames = list(data.keys())
-    predParameters = list(data.values())
+  def _createPredicateHeaders(self, predNames, predParameters):
     cpHeaders = []
     for i in range(len(predNames)):
       tmp = f"{predNames[i]}"
@@ -52,15 +54,11 @@ class ViewPane():
     predicateCP.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
     return predicateCP
 
-  def _parseTableData(self, data):
-    # data initial struct:
-    # {key: value, key: value}
-    # return struct:
-    # [[header1, header2, ..., header_n],[data1, data2, ..., data_n],...]
-    result = []
-    tableHeadings = list(data.keys())
-    result.append(["timestep"]+tableHeadings)
-    # for i in range(len(keys)):
-    #   result.append([keys[i], data[keys[i]]])
-    return result
-    
+  def _parseTableData(self, data, attrName, attrVals):
+    tableHeadings = ["timestep"]+list(attrVals.keys())
+    crntTableData = [tableHeadings]
+    if attrName not in list(data.keys()):
+      print(f'{attrName} is not in propositions')
+    else:
+      crntTableData = crntTableData+data[attrName]
+    return crntTableData

@@ -21,6 +21,7 @@ class TablePane(ttk.Frame):
       pass
 
   def _populateViewTable(self):
+    print(self.data)
     self.headings = self.data[0]
     self.table = ttk.Treeview(self.frame, columns=self.headings, show='headings')
     self.table.pack(fill="x")
