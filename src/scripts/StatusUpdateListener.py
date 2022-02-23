@@ -1,26 +1,25 @@
-from tracemalloc import Statistic
 import rospy
-from rosplan_knowledge_msgs.msg import KnowledgeItem, StatusUpdate
+from rosplan_knowledge_msgs.msg import StatusUpdate
 class StatusUpdateListener():
-  def __init__(self):
+  def __init__(self, _callback):
     self.KB = '/rosplan_knowledge_base/status/update'
-    # listener subscription
-    # try:
-    #   self.kb_update_status_subs = rospy.Subscriber(self.knowledge_base + '/status/update', StatusUpdate, self.kb_update_status)
-    # except rospy.ServiceException as e:
-    #   print(f'Service call failed: {e}')
-    return 0
+    self._listener(_callback)
+    # self._callback = _callback
 
-  def _callback(self, data):
-    rospy.loginfo(rospy.get_caller_id() +"I heard %s", data.data)
-
-  def listener(self):
+  def _listener(self, _callback):
     rospy.init_node('listener', anonymous=True)
     try:
-      rospy.Subscriber(self.KB, StatusUpdate, self._callback)
+      rospy.Subscriber(self.KB, StatusUpdate, _callback)
     except rospy.ServiceException as e:
       print(f'Service call failed: {e}')
     rospy.spin()
-  
+
+class parentNode():
+  def __init__(self):
+    StatusUpdateListener(self._callback)
+
+  def _callback(self, data):
+    print('I awm jwust a widdle callbwack fwunction')
+
 if __name__=='__main__':
-  StatusUpdateListener().listener()
+  parentNode()

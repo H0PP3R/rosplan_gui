@@ -2,11 +2,13 @@ from tkinter import ttk
 from components.collapsiblePane import ToggledFrame as cp
 from styling import *
 from scripts.KB_CRUD import KnowledgeBaseNode
+from scripts.StatusUpdateListener import StatusUpdateListener
 from components.tablePane import TablePane
 
 class ViewPane():
   def __init__(self, parent):
     self.KB = KnowledgeBaseNode()
+    self.listener = StatusUpdateListener(self._callback)
     self._createViewPane(parent)
   
   def _createViewPane(self, parent):
@@ -17,8 +19,11 @@ class ViewPane():
     # creating and populating predicate panes
     predicateData = self.KB.getPredicates()
     numPredicateData = self.KB.getNumPredicates()
+    numPredicateData = self._parseNumericPropTableData(numPredicateData)
     predicateData.update(numPredicateData)
     tableData = self.KB.getPropositions()
+    crntNumericPropData = self.KB.getCurrentNumPropositions()
+    tableData.update(crntNumericPropData)
     predicatesPane = self._createPredicatePanes(viewPane, predicateData, tableData)
     predicatesPane.pack(fill='x')
 
@@ -55,10 +60,22 @@ class ViewPane():
     return predicateCP
 
   def _parseTableData(self, data, attrName, attrVals):
-    tableHeadings = ["timestep"]+list(attrVals.keys())
+    tableHeadings = ["timestep"]+list(attrVals.keys())+["isNegative"]
     crntTableData = [tableHeadings]
     if attrName not in list(data.keys()):
       print(f'{attrName} is not in propositions')
     else:
       crntTableData = crntTableData+data[attrName]
     return crntTableData
+
+  def _parseNumericPropTableData(self, propositions):
+    for i in propositions:
+      propositions[i]['funcVal'] = 'functional_value'
+    return propositions
+
+  def _callback(self, data):
+    print("status update to KB made")
+    pass
+
+  # def _updatePane(self):
+  #   self.KB.getPredicates()
