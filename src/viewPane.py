@@ -2,33 +2,79 @@ from tkinter import ttk
 from components.collapsiblePane import ToggledFrame as cp
 from styling import *
 from scripts.KB_CRUD import KnowledgeBaseNode
-from scripts.StatusUpdateListener import StatusUpdateListener
 from components.tablePane import TablePane
 
 class ViewPane():
   def __init__(self, parent):
-    self.KB = KnowledgeBaseNode()
-    self.listener = StatusUpdateListener(self._callback)
+    self.parent = parent
+    self.tableData = None
+    self.predicateData = None
+    self.KB = KnowledgeBaseNode(self._callback)
+    self._setInitialData()
     self._createViewPane(parent)
   
   def _createViewPane(self, parent):
-    viewPane = ttk.Frame(parent)
-    vScroll = ttk.Scrollbar(viewPane)
+    print("createViewPane")
+    self.viewPane = ttk.Frame(parent)
+    vScroll = ttk.Scrollbar(self.viewPane)
     vScroll.pack(side="right", fill = "y")
 
-    # creating and populating predicate panes
+    # predicatesPane = self._createPredicatePanes(viewPane, self.predicateData, self.tableData)
+    # predicatesPane.pack(fill='x')
+    self._updateViewPane(self.viewPane)
+
+    self.viewPane.pack(fill="x")
+    # vScroll.configure(command=predicatesPane.yview)
+  
+  def _updateViewPane(self, parent):
+    predicatesPane = self._createPredicatePanes(parent, self.predicateData, self.tableData)
+    predicatesPane.pack(fill='x')
+  
+  def _setInitialData(self):
     predicateData = self.KB.getPredicates()
     numPredicateData = self.KB.getNumPredicates()
     numPredicateData = self._parseNumericPropTableData(numPredicateData)
     predicateData.update(numPredicateData)
     tableData = self.KB.getPropositions()
-    crntNumericPropData = self.KB.getCurrentNumPropositions()
-    tableData.update(crntNumericPropData)
-    predicatesPane = self._createPredicatePanes(viewPane, predicateData, tableData)
-    predicatesPane.pack(fill='x')
-
-    viewPane.pack(fill="x")
-    # vScroll.configure(command=predicatesPane.yview)
+    numericPropData = self.KB.getNumPropositions()
+    tableData.update(numericPropData)
+    self.predicateData = predicateData
+    self.tableData = tableData
+      
+  def _updatePane(self):
+    print("updatePane")
+    self._updateTableData()
+    for widgets in self.viewPane.winfo_children():
+      widgets.destroy()
+    self._updateViewPane(self.viewPane)
+    # self.tableData = tableData
+  
+  def _updateTableData(self):
+    tableData = self.KB.getPropositions()
+    numericPropData = self.KB.getNumPropositions()
+    tableData.update(numericPropData)
+    print(f'new data pulled from KB:\n{tableData}')
+    # print(f'prev table_data:{self.tableData}\nnew data pulled from KB:{tableData}')
+    predicateNames = list(tableData.keys())
+    crntPredicateNames = list(self.tableData.keys())
+    for predName in predicateNames:
+      # add new predicates
+      if predName not in crntPredicateNames:
+        self.tableData[predName] = tableData[predName]
+      # add new propositions
+      for prop in tableData[predName]:
+        if prop not in self.tableData[predName]:
+          self.tableData[predName].append(prop)
+    # add new data for removed KB states
+    for predName in crntPredicateNames:
+      if predName not in predicateNames:
+        entry = self.tableData[predName][-1]
+        tmp = []
+        for item in entry: tmp.append(item)
+        tmp[-1] = 'False'
+        if tmp not in self.tableData[predName]:
+          self.tableData[predName].append(tmp)
+    # print(f'updated tableData: {self.tableData}')
   
   def _createPredicatePanes(self, parent, predicateData, tableData):
     predNames = list(predicateData.keys())
@@ -60,7 +106,7 @@ class ViewPane():
     return predicateCP
 
   def _parseTableData(self, data, attrName, attrVals):
-    tableHeadings = ["timestep"]+list(attrVals.keys())+["isNegative"]
+    tableHeadings = ["timestep"]+list(attrVals.keys())+["True/False"]
     crntTableData = [tableHeadings]
     if attrName not in list(data.keys()):
       print(f'{attrName} is not in propositions')
@@ -75,7 +121,4 @@ class ViewPane():
 
   def _callback(self, data):
     print("status update to KB made")
-    pass
-
-  # def _updatePane(self):
-  #   self.KB.getPredicates()
+    self._updatePane()
