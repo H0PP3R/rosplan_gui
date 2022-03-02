@@ -15,20 +15,25 @@ class ViewPane():
   
   def _createViewPane(self, parent):
     print("createViewPane")
-    self.viewPane = ttk.Frame(parent)
-    vScroll = ttk.Scrollbar(self.viewPane)
+    viewPane = ttk.Frame(parent)
+    vScroll = ttk.Scrollbar(viewPane)
     vScroll.pack(side="right", fill = "y")
 
-    # predicatesPane = self._createPredicatePanes(viewPane, self.predicateData, self.tableData)
-    # predicatesPane.pack(fill='x')
-    self._updateViewPane(self.viewPane)
+    predicatesPane = self._createPredicatePanes(viewPane)
+    predicatesPane.pack(fill='x')
 
-    self.viewPane.pack(fill="x")
+    viewPane.pack(fill="x")
     # vScroll.configure(command=predicatesPane.yview)
   
-  def _updateViewPane(self, parent):
-    predicatesPane = self._createPredicatePanes(parent, self.predicateData, self.tableData)
-    predicatesPane.pack(fill='x')
+  def _updateCPPane(self):
+    predNames = list(self.predicateData.keys())
+    predParameters = list(self.predicateData.values())
+    for i in range(len(self.predicateData)):
+      crntFrame = self.listofCP[i].sub_frame
+      for widgets in crntFrame.winfo_children():
+        widgets.destroy()
+      crntTableData = self._parseTableData(self.tableData, predNames[i], predParameters[i])
+      TablePane(crntFrame, crntTableData)
   
   def _setInitialData(self):
     predicateData = self.KB.getPredicates()
@@ -42,19 +47,13 @@ class ViewPane():
     self.tableData = tableData
       
   def _updatePane(self):
-    print("updatePane")
     self._updateTableData()
-    for widgets in self.viewPane.winfo_children():
-      widgets.destroy()
-    self._updateViewPane(self.viewPane)
-    # self.tableData = tableData
+    self._updateCPPane()
   
   def _updateTableData(self):
     tableData = self.KB.getPropositions()
     numericPropData = self.KB.getNumPropositions()
     tableData.update(numericPropData)
-    print(f'new data pulled from KB:\n{tableData}')
-    # print(f'prev table_data:{self.tableData}\nnew data pulled from KB:{tableData}')
     predicateNames = list(tableData.keys())
     crntPredicateNames = list(self.tableData.keys())
     for predName in predicateNames:
@@ -74,18 +73,19 @@ class ViewPane():
         tmp[-1] = 'False'
         if tmp not in self.tableData[predName]:
           self.tableData[predName].append(tmp)
-    # print(f'updated tableData: {self.tableData}')
   
-  def _createPredicatePanes(self, parent, predicateData, tableData):
-    predNames = list(predicateData.keys())
-    predParameters = list(predicateData.values())
+  def _createPredicatePanes(self, parent):
+    self.listofCP = []
+    predNames = list(self.predicateData.keys())
+    predParameters = list(self.predicateData.values())
     predicatesPane = ttk.Frame(parent)
 
     predicateHeaders = self._createPredicateHeaders(predNames, predParameters)
-    for i in range(len(predicateData)):
+    for i in range(len(self.predicateData)):
       cp = self._createCollapsiblePane(predicatesPane, predicateHeaders[i])
+      self.listofCP.append(cp)
       # Parse current predicate propositional data and show as a table
-      crntTableData = self._parseTableData(tableData, predNames[i], predParameters[i])
+      crntTableData = self._parseTableData(self.tableData, predNames[i], predParameters[i])
       TablePane(cp.sub_frame, crntTableData)
     return predicatesPane
 
@@ -120,5 +120,4 @@ class ViewPane():
     return propositions
 
   def _callback(self, data):
-    print("status update to KB made")
     self._updatePane()
