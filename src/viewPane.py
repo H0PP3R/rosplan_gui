@@ -1,28 +1,32 @@
-from tkinter import ttk
+from tkinter import Frame, ttk, Button
 from components.collapsiblePane import ToggledFrame as cp
 from styling import *
 from scripts.KB_CRUD import KnowledgeBaseNode
 from components.tablePane import TablePane
 
-class ViewPane():
-  def __init__(self, parent):
-    self.parent = parent
+class ViewPane(Frame):
+  def __init__(self, parent, controller):
+    Frame.__init__(self, parent)
+    self.controller = controller
     self.tableData = None
     self.predicateData = None
     self.KB = KnowledgeBaseNode(self._callback)
     self._setInitialData()
-    self._createViewPane(parent)
+    self._createViewPane(self.controller)
   
-  def _createViewPane(self, parent):
+  def _createViewPane(self, controller):
     print("createViewPane")
-    viewPane = ttk.Frame(parent)
-    vScroll = ttk.Scrollbar(viewPane)
+    vScroll = ttk.Scrollbar(self)
     vScroll.pack(side="right", fill = "y")
 
-    predicatesPane = self._createPredicatePanes(viewPane)
+    predicatesPane = self._createPredicatePanes(self)
     predicatesPane.pack(fill='x')
 
-    viewPane.pack(fill="x")
+    button = Button(self, text ="Edit/Delete", 
+                    command=lambda: controller.show_frame("EditPane"))
+    button.pack()
+
+    # self.grid(column=0, row=0)
     # vScroll.configure(command=predicatesPane.yview)
   
   def _updateCPPane(self):
