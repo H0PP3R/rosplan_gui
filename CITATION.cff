@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Jia"
+  given-names: "Eden"
+  affiliation: "King's College London"
+  email: "edenjia@hotmail.com"
+title: "rosplan_gui"
+version: 1.0.0
+url: "https://github.com/H0PP3R/rosplan_gui"
