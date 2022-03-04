@@ -1,4 +1,5 @@
-# https://stackoverflow.com/questions/13141259/expandable-and-contracting-frame-in-tkinter
+# Component taken from:
+# https://stackoverflow.com/a/13169685
 import tkinter as tk
 from tkinter import ttk 
 

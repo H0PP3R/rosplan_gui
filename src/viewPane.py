@@ -16,8 +16,6 @@ class ViewPane(Frame):
   
   def _createViewPane(self, controller):
     print("createViewPane")
-    vScroll = ttk.Scrollbar(self)
-    vScroll.pack(side="right", fill = "y")
 
     predicatesPane = self._createPredicatePanes(self)
     predicatesPane.pack(fill='x')
@@ -25,9 +23,6 @@ class ViewPane(Frame):
     button = Button(self, text ="Edit/Delete", 
                     command=lambda: controller.show_frame("EditPane"))
     button.pack()
-
-    # self.grid(column=0, row=0)
-    # vScroll.configure(command=predicatesPane.yview)
   
   def _updateCPPane(self):
     predNames = list(self.predicateData.keys())
