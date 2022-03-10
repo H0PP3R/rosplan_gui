@@ -1,4 +1,4 @@
-ROOT_SIZE = (640,480)
+ROOT_SIZE = (640,640)
 TABLE_STYLING = {
   "ANCHOR": "center",
 }

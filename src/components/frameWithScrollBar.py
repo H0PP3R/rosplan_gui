@@ -12,8 +12,8 @@ class FrameWithScrollBar(tk.Frame):
   def __init__(self, parent, *args, **kwargs):
     self.count = 0
     super().__init__(parent, *args, **kwargs)
-    self.canvas = tk.Canvas(self, bg='yellow')
-    self.frame = tk.Frame(self.canvas, bg='green')
+    self.canvas = tk.Canvas(self)
+    self.frame = tk.Frame(self.canvas)
     self.scrollbar = tk.Scrollbar(self, orient='vertical',
                             command=self.canvas.yview)
     self.canvas.configure(yscrollcommand=self.scrollbar.set)
