@@ -1,4 +1,5 @@
 from tkinter import Tk, Button, Frame, Grid
+
 from styling import *
 from viewPane import ViewPane
 from editPane import EditPane
@@ -19,24 +20,21 @@ class App(Tk):
     container = FrameWithScrollBar(self)
     container.pack(side="top", fill="both", expand=True)
 
-    # self.frames = {}
-    # for F in (EditPane, ViewPane):
-    #   pageName = F.__name__
-    #   frame = F(parent=container.frame, controller=self,
-    #             tableData=self.tableData, predicateData=self.predicateData)
-    #   self.frames[pageName] = frame
-    #   frame.grid(row=0, column=0, sticky="wesn")
-    #   Grid.columnconfigure(container.frame,0,weight=1)
-
-    self.editPane = EditPane(parent=container.frame, controller=self,
-                              tableData=self.tableData, predicateData=self.predicateData,
-                              headerText=self.headerText)
-    self.editPane.grid(row=0, column=0, sticky="wesn")
-    # self.viewPane = ViewPane(parent=container.frame, controller=self, 
-    #                           tableData=self.tableData, predicateData=self.predicateData,
-    #                           headerText=self.headerText)
-    # self.viewPane.grid(row=0, column=0, sticky="wesn")
+    self.frames = {}
+    data = {
+      'tableData': self.tableData,
+      'predicateData': self.predicateData,
+      'headerText': self.headerText,
+      'knowledgeTypes': self.knowledgeTypes
+    }
+    self.viewPane = ViewPane(parent=container.frame, controller=self, data=data)
+    self.editPane = EditPane(parent=container.frame, controller=self, data=data, update=self._updateKB)
+    self.frames['ViewPane'] = self.viewPane
+    self.frames['EditPane'] = self.editPane
+    for frame in list(self.frames.values()): 
+      frame.grid(row=0, column=0, sticky="wesn")
     Grid.columnconfigure(container.frame,0,weight=1)
+    self.showFrame('ViewPane')
     
     self.mainloop()
   
@@ -58,7 +56,8 @@ class App(Tk):
     tableData.update(numericPropData)
     self.predicateData = predicateData
     self.tableData = tableData
-      
+    self.knowledgeTypes = self.KB.getKnowledgeTypes()
+    
   def _updateTableData(self):
     tableData = self.KB.getPropositions()
     numericPropData = self.KB.getNumPropositions()
@@ -85,7 +84,7 @@ class App(Tk):
   
   def _parseNumericPropTableData(self, propositions):
     for i in propositions:
-      propositions[i]['funcVal'] = 'functional_value'
+      propositions[i]['function_value'] = 'function_value'
     return propositions
 
   def _createHeaderText(self):
@@ -103,7 +102,10 @@ class App(Tk):
 
   def _updatePane(self):
     self._updateTableData()
-    # self.frames['ViewPane']._updateCPPane()
-    # self.frames['EditPane']._updateTPane()
-    # self.viewPane.updateCPane()
-    self.editPane.updateTPane()
+    self.frames['ViewPane'].updateCPane()
+    self.frames['EditPane'].updateTPane()
+
+  def _updateKB(self, newVals):
+    print('_updateKB')
+    # print(newVals)
+    self.KB.update(newVals)

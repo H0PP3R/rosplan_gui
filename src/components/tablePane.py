@@ -34,7 +34,6 @@ class TablePane(Frame):
   
   def selectItem(self, a):   # added self and a (event)
     self.selectedRowValues = self.table.item(self.table.selection())['values']# gets all the values of the selected row
-    print ('The test_str = ', type(self.selectedRowValues), self.selectedRowValues,  '\n')  # prints a dictionay of the selected row
     if self.numRecords < 1:
       print("Table empty")
     if self.callback != None: 

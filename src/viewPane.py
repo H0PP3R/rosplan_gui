@@ -4,12 +4,12 @@ from styling import *
 from components.tablePane import TablePane
 
 class ViewPane(Frame):
-  def __init__(self, parent, controller, tableData, predicateData, headerText):
+  def __init__(self, parent, controller, data):
     Frame.__init__(self, parent)
     self.controller = controller
-    self.tableData = tableData
-    self.predicateData = predicateData
-    self.headerText = headerText
+    self.tableData = data['tableData']
+    self.predicateData = data['predicateData']
+    self.headerText = data['headerText']
     self.predNames = list(self.predicateData.keys())
     self.predParameters = list(self.predicateData.values())
     self._populatePane(self.controller)
@@ -30,7 +30,7 @@ class ViewPane(Frame):
       for widgets in crntFrame.winfo_children():
         widgets.destroy()
       crntTableData = self._parseTableData(self.tableData, predNames[i], predParameters[i])
-      TablePane(crntFrame, crntTableData)
+      TablePane(crntFrame, crntTableData, height=len(crntTableData))
 
   def _createPredicatePanes(self, parent):
     self.listofCP = []
@@ -44,7 +44,7 @@ class ViewPane(Frame):
       self.listofCP.append(cp)
       # Parse current predicate propositional data and show as a table
       crntTableData = self._parseTableData(self.tableData, predNames[i], predParameters[i])
-      TablePane(cp.sub_frame, crntTableData)
+      TablePane(cp.sub_frame, crntTableData, height=len(crntTableData))
     return predicatesPane
 
   def _createCollapsiblePane(self, parent, headerText):

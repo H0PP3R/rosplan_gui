@@ -19,6 +19,7 @@ class KnowledgeBaseNode():
       "statusUpdate":f"{basePath}/status/update",
       "updateKB": f"{basePath}/update"
     }
+    self.knowledgeTypes = {}
     self._setUp()
   
   def _setUp(self):
@@ -71,20 +72,24 @@ class KnowledgeBaseNode():
         entry.append(crntProp.function_value)
       entry.append('True')
       result[crntProp.attribute_name].append(entry)
+      self.knowledgeTypes[crntProp.attribute_name] = crntProp.knowledge_type
     return result
-
-  def _parseUpdateRequest(self, resp):
-    for predicate in resp:
-      ki = KnowledgeItem()
-      # construct KnowledgeItem
-      # ki.attribute_name = predicate_info.pop(0)
-      # if type(val) is bool:
-      #     ki.knowledge_type = ki.FACT
-      #     ki.is_negative = not val
-      # else:
-      #     ki.knowledge_type = ki.FUNCTION
-      #     ki.function_value = val
-    return 0
+  
+  def getKnowledgeTypes(self):
+    return self.knowledgeTypes
+  
+  def _parseUpdateRequest(self, vals):
+    ki = KnowledgeItem()
+    # construct KnowledgeItem
+    ki.attribute_name = vals['attribute_name']
+    ki.knowledge_type = ki.FACT
+    ki.is_negative = vals['is_negative']
+    ki.values = vals['values']
+    if 'function_value' in list(vals.keys()):
+      ki.knowledge_type = ki.FUNCTION
+      ki.function_value = float(vals['function_value'])
+    # print(f'knowledgeItem:\n{ki}')
+    return ki
 
   def getPredicates(self):
     self.predicates = self._parseResponse(self._getKBPredicates())
@@ -109,16 +114,13 @@ class KnowledgeBaseNode():
     except rospy.ServiceException as e:
       print(f'Service call failed: {e}')
   
-  def update(self, msgs):
-    kus = KnowledgeUpdateServiceRequest()
-    kus.update_type += np.array(kus.ADD_KNOWLEDGE).tostring()
-    msgs = self._parseUpdateRequest(msgs)
-    kus.knowledge.append(msgs)
+  def update(self, vals):
+    knowledgeItem = self._parseUpdateRequest(vals)
 
     try: 
-      self._updateKBServer.call(kus)
+      self._updateKBServer(KnowledgeUpdateServiceRequest.ADD_KNOWLEDGE, knowledgeItem)
     except Exception as e:
-      rospy.logerr(f"aaa failed to update from gui: {e}")
+      rospy.logerr(f"Service call failed: {e}")
 
 if __name__ == '__main__':
   x = KnowledgeBaseNode()
