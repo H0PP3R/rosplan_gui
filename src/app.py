@@ -5,10 +5,20 @@ from components.editFrame import EditFrame
 from components.scrollbarFrame import ScrollbarFrame
 from scripts.KB_CRUD import KnowledgeBaseNode
 
-ROOT_SIZE = (640,640)
+APP_SIZE = (640,640)
 
 class App(Tk):
+  '''
+  Main class of the rosplan_gui
+  Extension of the top level widget of Tk.
+  '''
   def __init__(self):
+    '''
+    Constructor, initialises variables to hold important data 
+    from the KnowledgeBase. 
+    Initialises the KnowledgeBaseNode.
+    @param self: the class itself
+    '''
     Tk.__init__(self)
     self.tableData = None
     self.predicateData = None
@@ -16,37 +26,60 @@ class App(Tk):
     self.KB = KnowledgeBaseNode(self._callback)
     self._setInitialData()
     self.headerText = self._createHeaderText()
-    self.geometry(f"{ROOT_SIZE[0]}x{ROOT_SIZE[1]}")
+    self.geometry(f'{APP_SIZE[0]}x{APP_SIZE[1]}')
 
+    self._populateFrame()  
+
+    self.mainloop()
+  
+  def _populateFrame(self):
+    '''
+    Procedure to create and populate the App's main frame with widgets
+    @param self: the class itself
+    '''
     container = ScrollbarFrame(self)
-    container.pack(side="top", fill="both", expand=True)
+    container.pack(side='top', fill='both', expand=True)
 
-    self.frames = {}
     data = {
       'tableData': self.tableData,
       'predicateData': self.predicateData,
       'headerText': self.headerText,
     }
+    self.frames = {}
     self.viewFrame = ViewFrame(parent=container.frame, controller=self, data=data)
     self.editFrame = EditFrame(parent=container.frame, controller=self, data=data, KB=self.KB)
+    # Make frames stacked on top of on another
     self.frames['ViewFrame'] = self.viewFrame
     self.frames['EditFrame'] = self.editFrame
     for frame in list(self.frames.values()): 
-      frame.grid(row=0, column=0, sticky="wesn")
+      frame.grid(row=0, column=0, sticky='wesn')
     Grid.columnconfigure(container.frame,0,weight=1)
+    # Puts ViewFrame on top of the other frames
     self.showFrame('ViewFrame')
-    
-    self.mainloop()
   
-  def showFrame(self, page_name):
-    '''Show a frame for the given page name'''
-    frame = self.frames[page_name]
+  def showFrame(self, frameName):
+    '''
+    Procedure to raise the frame for the given frame name
+    @param self: the class itself
+    @param frameName: name of the frame to be shown
+    '''
+    frame = self.frames[frameName]
     frame.tkraise()
 
   def _callback(self, data):
-    self._updatePane()
+    '''
+    Procedure to react whenever a status update is published.
+    Currently calls the procedure to update frames
+    @param self: the class itself
+    @param data: StatusUpdate object
+    '''
+    self._updateFrame()
   
   def _setInitialData(self):
+    '''
+    Procedure that sets the data from the KB.
+    @param self: the class itself
+    '''
     predicateData = self.KB.getPredicates()
     numPredicateData = self.KB.getNumPredicates()
     numPredicateData = self._parseNumericPropTableData(numPredicateData)
@@ -54,10 +87,17 @@ class App(Tk):
     tableData = self.KB.getPropositions()
     numericPropData = self.KB.getNumPropositions()
     tableData.update(numericPropData)
+    # predicateData used mostly to populate labels for tableData
     self.predicateData = predicateData
+    # tableData used to populate table frames
     self.tableData = tableData
     
   def _updateTableData(self):
+    '''
+    Procedure that identifies new data added or changed in the KB
+    and updates the tableData accordingly
+    @param self: the class itself
+    '''
     tableData = self.KB.getPropositions()
     numericPropData = self.KB.getNumPropositions()
     tableData.update(numericPropData)
@@ -82,24 +122,39 @@ class App(Tk):
           self.tableData[predName].append(tmp)
   
   def _parseNumericPropTableData(self, propositions):
+    '''
+    Function that adds a function_value entry onto propositions
+    @param self: the class itself
+    @param propositions: dictionary with numeric proposition data
+    @return the updated propositions dictionary
+    '''
     for i in propositions:
       propositions[i]['function_value'] = 'function_value'
     return propositions
 
   def _createHeaderText(self):
+    '''
+    Function that parses and creates tableData labels from predicateData
+    @param self: the class itself
+    @return the labels for each predicateData
+    '''
     predNames = list(self.predicateData.keys())
     predParameters = list(self.predicateData.values())
     headerTexts = []
     for i in range(len(predNames)):
-      tmp = f"{predNames[i]}"
+      tmp = f'{predNames[i]}'
       crntPredicateParams = predParameters[i]
       keys = list(crntPredicateParams.keys())
       for j in range(len(crntPredicateParams)):
-        tmp += f" ?{keys[j]} - {crntPredicateParams[keys[j]]}"
+        tmp += f' ?{keys[j]} - {crntPredicateParams[keys[j]]}'
       headerTexts.append(f'({tmp})')
     return headerTexts
 
-  def _updatePane(self):
+  def _updateFrame(self):
+    '''
+    Procedure that updates the frames
+    @param self: the class itself
+    '''
     self._updateTableData()
-    self.frames['ViewFrame'].updateCPane()
-    self.frames['EditFrame'].updateTPane()
+    self.frames['ViewFrame'].updateCFrame()
+    self.frames['EditFrame'].updateTFrame()

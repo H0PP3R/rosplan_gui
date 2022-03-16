@@ -36,6 +36,8 @@ class TableFrame(Frame):
     self.selectedRowValues = self.table.item(self.table.selection())['values']# gets all the values of the selected row
     if self.numRecords < 1:
       print("Table empty")
+    elif len(self.selectedRowValues) < 1:
+      pass
     else:
       if self.callback != None: 
         self.callback(self.name)

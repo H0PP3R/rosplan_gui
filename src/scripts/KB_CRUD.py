@@ -6,6 +6,11 @@ from rosplan_knowledge_msgs.srv import GetAttributeService, GetAttributeServiceR
 from rosplan_knowledge_msgs.msg import StatusUpdate, KnowledgeItem
 
 class KnowledgeBaseNode():
+  '''
+  Class that interacts with specific rosplan_knowledge_base services.
+  Able to get proposition, predicate and function data, update the KnowledgeBase
+  and delete from the KnowledgeBase
+  '''
   def __init__(self, _callback):
     self.t0 = 0
     self.firstCall = True
