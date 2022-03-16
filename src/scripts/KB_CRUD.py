@@ -1,6 +1,9 @@
-from rosplan_knowledge_msgs.srv import GetDomainAttributeService, GetDomainAttributeServiceResponse, GetAttributeService, GetAttributeServiceResponse, KnowledgeQueryService
-from rosplan_knowledge_msgs.msg import StatusUpdate
 import rospy
+import numpy as np
+from rosplan_knowledge_msgs.srv import KnowledgeUpdateServiceArray, KnowledgeUpdateServiceArrayRequest
+from rosplan_knowledge_msgs.srv import GetDomainAttributeService, GetDomainAttributeServiceResponse
+from rosplan_knowledge_msgs.srv import GetAttributeService, GetAttributeServiceResponse
+from rosplan_knowledge_msgs.msg import StatusUpdate, KnowledgeItem
 
 class KnowledgeBaseNode():
   def __init__(self, _callback):
@@ -13,21 +16,27 @@ class KnowledgeBaseNode():
       "functions": f"{basePath}/domain/functions",
       "propositions": f"{basePath}/state/propositions",
       "numericFluents": f"{basePath}/state/functions",
-      "statusUpdate":f"{basePath}/status/update"
+      "statusUpdate":f"{basePath}/status/update",
+      "updateKB": f"{basePath}/update_array"
     }
+    self.knowledgeTypes = {}
+    self.kus = None
     self._setUp()
   
   def _setUp(self):
+    self.kus = KnowledgeUpdateServiceArrayRequest()
     rospy.wait_for_service(self.servicePaths["predicates"])
     rospy.wait_for_service(self.servicePaths["functions"])
     rospy.wait_for_service(self.servicePaths["propositions"])
     rospy.wait_for_service(self.servicePaths["numericFluents"])
+    rospy.wait_for_service(self.servicePaths["updateKB"])
     self._statusUpdateListener(self._callback)
     try:
       self._getKBPredicates = rospy.ServiceProxy(self.servicePaths["predicates"], GetDomainAttributeService)
       self._getKBNumPredicates = rospy.ServiceProxy(self.servicePaths["functions"], GetDomainAttributeService)
       self._getKBPropositions = rospy.ServiceProxy(self.servicePaths["propositions"], GetAttributeService)
       self._getKBNumPropositions = rospy.ServiceProxy(self.servicePaths["numericFluents"], GetAttributeService)
+      self._updateKBServer = rospy.ServiceProxy(self.servicePaths["updateKB"], KnowledgeUpdateServiceArray)
     except rospy.ServiceException as e:
       print(f'Service call failed: {e}')
 
@@ -63,9 +72,24 @@ class KnowledgeBaseNode():
       # Add numeric value to entry if crntProp is a numeric fluent
       if crntProp.knowledge_type == 2:
         entry.append(crntProp.function_value)
-      entry.append('True')
+      elif crntProp.knowledge_type == 1:
+        entry.append('True')
       result[crntProp.attribute_name].append(entry)
+      self.knowledgeTypes[crntProp.attribute_name] = crntProp.knowledge_type
     return result
+  
+  def _parseUpdateRequest(self, vals):
+    ki = KnowledgeItem()
+    # construct KnowledgeItem
+    ki.attribute_name = vals['attribute_name']
+    ki.knowledge_type = ki.FACT
+    if 'is_negative' in vals.keys():
+      ki.is_negative = vals['is_negative']
+    ki.values = vals['values']
+    if 'function_value' in list(vals.keys()):
+      ki.knowledge_type = ki.FUNCTION
+      ki.function_value = float(vals['function_value'])
+    return ki
 
   def getPredicates(self):
     self.predicates = self._parseResponse(self._getKBPredicates())
@@ -89,9 +113,38 @@ class KnowledgeBaseNode():
       rospy.Subscriber(self.servicePaths['statusUpdate'], StatusUpdate, _callback)
     except rospy.ServiceException as e:
       print(f'Service call failed: {e}')
+  
+  def update(self, facts):
+    kus = self.kus
+    crntKI = self._parseUpdateRequest(facts['crnt'])
+    newKI = self._parseUpdateRequest(facts['new'])
+    kus.update_type += np.array(kus.REMOVE_KNOWLEDGE).tostring()
+    kus.knowledge.append(crntKI)
+    kus.update_type += np.array(kus.ADD_KNOWLEDGE).tostring()
+    kus.knowledge.append(newKI)
 
+    self._sendToServer(kus)
+    self.kus = KnowledgeUpdateServiceArrayRequest()
+  
+  def delete(self, facts):
+    kus = self.kus
+    knowledgeItem = self._parseUpdateRequest(facts['crnt'])
+    kus.update_type += np.array(kus.REMOVE_KNOWLEDGE).tostring()
+    kus.knowledge.append(knowledgeItem)
+
+    self._sendToServer(kus)
+    self.kus = KnowledgeUpdateServiceArrayRequest()
+  
+  def _sendToServer(self, request):
+    try: 
+      self._updateKBServer.call(request)
+    except Exception as e:
+      rospy.logerr(f"Service call failed: {e}")
+
+def _callback():
+  pass
 if __name__ == '__main__':
-  x = KnowledgeBaseNode()
+  x = KnowledgeBaseNode(_callback)
   print(f'predicates:\n{x.getPredicates()}')
   print(f'functions:\n{x.getNumPredicates()}')
   print(f'propositions:\n{x.getPropositions()}')
