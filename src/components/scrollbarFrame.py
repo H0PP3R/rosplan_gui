@@ -1,13 +1,8 @@
 # Component taken from:
 # https://stackoverflow.com/a/57745179
-try:
-    import tkinter as tk                # python 3
-    from tkinter import font as tkfont  # python 3
-except ImportError:
-    import Tkinter as tk     # python 2
-    import tkFont as tkfont  # python 2
+import tkinter as tk                
 
-class FrameWithScrollBar(tk.Frame):
+class ScrollbarFrame(tk.Frame):
 
   def __init__(self, parent, *args, **kwargs):
     self.count = 0
@@ -31,13 +26,11 @@ class FrameWithScrollBar(tk.Frame):
     self.canvas.configure(scrollregion=self.frame.bbox('all'))
 
   def onCanvasConfigure(self, event):
-    width = event.width
     self.canvas.itemconfigure(self._frame_id, width=self.canvas.winfo_width())
 
 if __name__ == '__main__':
-
   root = tk.Tk()
-  fws = FrameWithScrollBar(root)
+  fws = ScrollbarFrame(root)
   buttons = list()
   for i in range(5):
       for j in range(25):

@@ -1,35 +1,33 @@
+import copy
 from tkinter import Entry, Label, Frame, Button, StringVar, ttk
-from styling import *
-from components.tablePane import TablePane
-from components.decimalEntry import DecimalEntry
 from tkinter.messagebox import askyesno
 from diagnostic_msgs.msg import KeyValue
-import copy
 
-class EditPane(Frame):
-  def __init__(self, parent, controller, data, update):
+from .tableFrame import TableFrame as tf
+from .decimalEntry import DecimalEntry
+
+class EditFrame(Frame):
+  def __init__(self, parent, controller, data, KB):
     Frame.__init__(self, parent)
     self.controller = controller
     self.tableData = data['tableData']
     self.predicateData = data['predicateData']
-    self.knowedgeTypes = data['knowledgeTypes']
     self.headerText = data['headerText']
-    self.update = update
+    self.KB = KB
     self.predNames = list(self.predicateData.keys())
     self.predParameters = list(self.predicateData.values())
     self.selectedTables = dict(zip(self.predNames, [0]*len(self.predNames)))
     self.prvSelected = None
     self.editValues = []
-    self.request = None
+    self.selectedAttrName = ''
     self._populatePane(self.controller)
-    # print(self.predicateData)
   
   def _populatePane(self, controller):
     self.mainPane = Frame(self)
     self.mainPane.pack(fill='x')
 
-    editLabel = Label(self.mainPane, text='Edit the most recent predicate value',
-            anchor='w')
+    editLabel = Label(self.mainPane, 
+                      text='Edit the most recent predicate value', anchor='w')
     editLabel.pack(fill='x')
     self._createTablePanes(self.mainPane)
 
@@ -54,7 +52,7 @@ class EditPane(Frame):
     submitButton = Button(buttonFrame, text="Apply", command=self._confirm)
     submitButton.pack(in_=top, side='left')
     switchPaneButton = Button(buttonFrame, text ="View", 
-                              command=lambda: controller.showFrame("ViewPane"))
+                              command=lambda: controller.showFrame("ViewFrame"))
     switchPaneButton.pack(in_=top, side='left')
 
   def _createTablePanes(self, parent):
@@ -70,11 +68,13 @@ class EditPane(Frame):
       crntTableData = self._parseTableData(self.tableData, predNames[i], predParameters[i])
       frame = Frame(parent)
       frame.pack(fill='x')
-      TablePane(frame, crntTableData, height=1, callback=self.callback, name=predNames[i])
+      tf(frame, crntTableData, height=1, callback=self.callback, name=predNames[i])
       self.listofTP[predNames[i]] = frame
 
   def _parseTableData(self, data, attrName, attrVals):
-    tableHeadings = ["timestep"]+list(attrVals.keys())+["True/False"]
+    tableHeadings = ["timestep"]+list(attrVals.keys())
+    if 'function_value' not in attrVals.keys():
+      tableHeadings += ["True/False"]
     crntTableData = [tableHeadings]
     if attrName in list(data.keys()):
       crntTableData = crntTableData+[data[attrName][-1]]
@@ -88,7 +88,7 @@ class EditPane(Frame):
       for widgets in crntFrame.winfo_children():
         widgets.destroy()
       crntTableData = self._parseTableData(self.tableData, predNames[i], predParameters[i])
-      TablePane(crntFrame, crntTableData, height=1, callback=self.callback, name=predNames[i])
+      tf(crntFrame, crntTableData, height=1, callback=self.callback, name=predNames[i])
 
   def callback(self, attrName):
     if attrName in self.tableData.keys():
@@ -105,13 +105,17 @@ class EditPane(Frame):
         self.editValues = self._parseEditVals(self.listofTP[attrName].winfo_children()[0])
         if len(self.editValues) > 0:
           self._updateEditEntries(self.editValuesPane, self.editValues)
+      self.selectedAttrName = list(self.selectedTables.keys())[list(self.selectedTables.values()).index(1)]
 
   def _parseEditVals(self, crntTP):
     result = []
     if crntTP.numRecords > 0:
       editVals = crntTP.selectedRowValues
       del editVals[0]
-      editHeadings = list(self.predicateData[crntTP.name].keys())+["True/False"]
+      predicateHeaders = list(self.predicateData[crntTP.name].keys())
+      editHeadings = list(self.predicateData[crntTP.name].keys())
+      if 'function_value' not in predicateHeaders:
+        editHeadings += ["True/False"]
       result = [editHeadings, editVals]
     return result
   
@@ -148,25 +152,68 @@ class EditPane(Frame):
     parent.grid_rowconfigure(1, weight=1)
   
   def _updateRecord(self):
-    selectedAttrName = list(self.selectedTables.keys())[list(self.selectedTables.values()).index(1)]
+    crntVals = self._getSelectedState(self.selectedAttrName)
+    newVals = self._getEditedState(self.selectedAttrName)
+    facts = {
+      'crnt': crntVals,
+      'new': newVals
+    }
+    self.KB.update(facts)
+
+  def _deleteRecord(self):
+    crntVals = self._getSelectedState(self.selectedAttrName)
+    facts = {'crnt': crntVals}
+    self.KB.delete(facts)
+  
+  def _getSelectedState(self, selectedAttrName):
+    crntVals = {'attribute_name': selectedAttrName}
+    copyOfEditVals = copy.deepcopy(self.editValues)
+    # format the true/false values to 'is_negative'
+    if 'function_value' not in copyOfEditVals[0]:
+      oldTf = self._parseIsNegative(copyOfEditVals[1][-1])
+      crntVals['is_negative'] = oldTf
+      copyOfEditVals[0].remove('True/False')
+      copyOfEditVals[1].pop(-1)
+    # convert other data to 'values'
+    crntValues = []
+    for i in range(len(copyOfEditVals[0])): 
+      if copyOfEditVals[0][i] == 'function_value':
+        crntVals['function_value'] = copyOfEditVals[1][-1]
+        copyOfEditVals[0].remove('function_value')
+        copyOfEditVals[1].pop(-1)
+      else:
+        oldPair = KeyValue()
+        oldPair.key = copyOfEditVals[0][i]
+        oldPair.value = copyOfEditVals[1][i]
+        crntValues.append(oldPair)
+    crntVals['values'] = crntValues
+    return crntVals
+
+  def _getEditedState(self, selectedAttrName):
     newVals = {'attribute_name': selectedAttrName}
     copyOfEditVals = copy.deepcopy(self.editValues)
     # format the true/false values to 'is_negative'
-    tf = self.entriesList[-1].get()
+    if 'function_value' not in copyOfEditVals[0]:
+      newTf = self._parseIsNegative(self.entriesList[-1].get())
+      newVals['is_negative'] = newTf
+      copyOfEditVals[0].remove('True/False')
+      copyOfEditVals[1].pop(-1)
+    # convert other data to 'values'
+    newValues = []
+    for i in range(len(copyOfEditVals[0])): 
+      if copyOfEditVals[0][i] == 'function_value':
+        newVals['function_value'] = self.entriesList[-1].get()
+        copyOfEditVals[0].remove('function_value')
+        copyOfEditVals[1].pop(-1)
+      else:
+        newPair = KeyValue()
+        newPair.key = copyOfEditVals[0][i]
+        newPair.value = self.entriesList[i].get()
+        newValues.append(newPair)
+    newVals['values'] = newValues
+    return newVals
+
+  def _parseIsNegative(self, tf):
     if tf=='True': tf = True
     else: tf = False
-    newVals['is_negative'] = not tf
-    copyOfEditVals[0].remove('True/False')
-    copyOfEditVals[1].pop(-1)
-    # convert other data to 'values'
-    values = []
-    for i in range(len(copyOfEditVals[0])): 
-      if 'function_value' == copyOfEditVals[0][i]:
-        newVals['function_value'] = self.entriesList[i].get()
-      else:
-        pair = KeyValue()
-        pair.key = copyOfEditVals[0][i]
-        pair.value = self.entriesList[i].get()
-        values.append(pair)
-    newVals['values'] = values
-    self.update(newVals)
+    return not tf

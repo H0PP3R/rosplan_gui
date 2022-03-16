@@ -1,6 +1,6 @@
-from tkinter import END, Frame, ttk, Entry
-from styling import TABLE_STYLING
-class TablePane(Frame):
+from tkinter import Frame, ttk
+
+class TableFrame(Frame):
   def __init__(self, parent, data, height=5, callback=None, name='TablePane'):
     Frame.__init__(self, parent)
     self.name=name
@@ -20,10 +20,10 @@ class TablePane(Frame):
     
     # Format column
     for i in range(len(self.headings)):
-      self.table.column(self.headings[i], anchor=TABLE_STYLING["ANCHOR"], width=80)
+      self.table.column(self.headings[i], anchor="center", width=80)
     # Create headings
     for i in range(len(self.headings)):
-      self.table.heading(self.headings[i], text=str(self.headings[i]), anchor=TABLE_STYLING["ANCHOR"])
+      self.table.heading(self.headings[i], text=str(self.headings[i]), anchor="center")
     # Add data
     if len(self.data) > 1:
       for i in range(1, len(self.data)):
@@ -36,8 +36,9 @@ class TablePane(Frame):
     self.selectedRowValues = self.table.item(self.table.selection())['values']# gets all the values of the selected row
     if self.numRecords < 1:
       print("Table empty")
-    if self.callback != None: 
-      self.callback(self.name)
+    else:
+      if self.callback != None: 
+        self.callback(self.name)
 
   def deselect(self):
     self.table.selection_remove(self.table.selection()[0])

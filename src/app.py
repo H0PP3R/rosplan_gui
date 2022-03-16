@@ -1,10 +1,11 @@
-from tkinter import Tk, Button, Frame, Grid
+from tkinter import Tk, Grid
 
-from styling import *
-from viewPane import ViewPane
-from editPane import EditPane
-from components.frameWithScrollBar import FrameWithScrollBar
+from components.viewFrame import ViewFrame
+from components.editFrame import EditFrame
+from components.scrollbarFrame import ScrollbarFrame
 from scripts.KB_CRUD import KnowledgeBaseNode
+
+ROOT_SIZE = (640,640)
 
 class App(Tk):
   def __init__(self):
@@ -17,7 +18,7 @@ class App(Tk):
     self.headerText = self._createHeaderText()
     self.geometry(f"{ROOT_SIZE[0]}x{ROOT_SIZE[1]}")
 
-    container = FrameWithScrollBar(self)
+    container = ScrollbarFrame(self)
     container.pack(side="top", fill="both", expand=True)
 
     self.frames = {}
@@ -25,16 +26,15 @@ class App(Tk):
       'tableData': self.tableData,
       'predicateData': self.predicateData,
       'headerText': self.headerText,
-      'knowledgeTypes': self.knowledgeTypes
     }
-    self.viewPane = ViewPane(parent=container.frame, controller=self, data=data)
-    self.editPane = EditPane(parent=container.frame, controller=self, data=data, update=self._updateKB)
-    self.frames['ViewPane'] = self.viewPane
-    self.frames['EditPane'] = self.editPane
+    self.viewFrame = ViewFrame(parent=container.frame, controller=self, data=data)
+    self.editFrame = EditFrame(parent=container.frame, controller=self, data=data, KB=self.KB)
+    self.frames['ViewFrame'] = self.viewFrame
+    self.frames['EditFrame'] = self.editFrame
     for frame in list(self.frames.values()): 
       frame.grid(row=0, column=0, sticky="wesn")
     Grid.columnconfigure(container.frame,0,weight=1)
-    self.showFrame('ViewPane')
+    self.showFrame('ViewFrame')
     
     self.mainloop()
   
@@ -56,7 +56,6 @@ class App(Tk):
     tableData.update(numericPropData)
     self.predicateData = predicateData
     self.tableData = tableData
-    self.knowledgeTypes = self.KB.getKnowledgeTypes()
     
   def _updateTableData(self):
     tableData = self.KB.getPropositions()
@@ -102,10 +101,5 @@ class App(Tk):
 
   def _updatePane(self):
     self._updateTableData()
-    self.frames['ViewPane'].updateCPane()
-    self.frames['EditPane'].updateTPane()
-
-  def _updateKB(self, newVals):
-    print('_updateKB')
-    # print(newVals)
-    self.KB.update(newVals)
+    self.frames['ViewFrame'].updateCPane()
+    self.frames['EditFrame'].updateTPane()

@@ -3,7 +3,7 @@
 import tkinter as tk
 from tkinter import ttk 
 
-class ToggledFrame(tk.Frame):
+class CollapsibleFrame(tk.Frame):
 
   def __init__(self, parent, text="", *args, **options):
     tk.Frame.__init__(self, parent, *args, **options)

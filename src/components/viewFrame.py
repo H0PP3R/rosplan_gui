@@ -1,9 +1,9 @@
 from tkinter import Frame, Button
-from components.collapsiblePane import ToggledFrame as cp
-from styling import *
-from components.tablePane import TablePane
 
-class ViewPane(Frame):
+from .collapsibleFrame import CollapsibleFrame as cf
+from .tableFrame import TableFrame as tf
+
+class ViewFrame(Frame):
   def __init__(self, parent, controller, data):
     Frame.__init__(self, parent)
     self.controller = controller
@@ -19,7 +19,7 @@ class ViewPane(Frame):
     predicatesPane.pack(fill='x')
 
     button = Button(self, text ="Edit/Delete", 
-                    command=lambda: controller.showFrame("EditPane"))
+                    command=lambda: controller.showFrame("EditFrame"))
     button.pack()
   
   def updateCPane(self):
@@ -30,7 +30,7 @@ class ViewPane(Frame):
       for widgets in crntFrame.winfo_children():
         widgets.destroy()
       crntTableData = self._parseTableData(self.tableData, predNames[i], predParameters[i])
-      TablePane(crntFrame, crntTableData, height=len(crntTableData))
+      tf(crntFrame, crntTableData, height=len(crntTableData))
 
   def _createPredicatePanes(self, parent):
     self.listofCP = []
@@ -40,20 +40,22 @@ class ViewPane(Frame):
 
     predicateHeaders = self.headerText
     for i in range(len(self.predNames)):
-      cp = self._createCollapsiblePane(predicatesPane, predicateHeaders[i])
-      self.listofCP.append(cp)
+      cf = self._createCollapsiblePane(predicatesPane, predicateHeaders[i])
+      self.listofCP.append(cf)
       # Parse current predicate propositional data and show as a table
       crntTableData = self._parseTableData(self.tableData, predNames[i], predParameters[i])
-      TablePane(cp.sub_frame, crntTableData, height=len(crntTableData))
+      tf(cf.sub_frame, crntTableData, height=len(crntTableData))
     return predicatesPane
 
   def _createCollapsiblePane(self, parent, headerText):
-    predicateCP = cp(parent, text=headerText, relief="raised", borderwidth=1)
+    predicateCP = cf(parent, text=headerText, relief="raised", borderwidth=1)
     predicateCP.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
     return predicateCP
 
   def _parseTableData(self, data, attrName, attrVals):
-    tableHeadings = ["timestep"]+list(attrVals.keys())+["True/False"]
+    tableHeadings = ["timestep"]+list(attrVals.keys())
+    if 'function_value' not in attrVals.keys():
+      tableHeadings += ["True/False"]
     crntTableData = [tableHeadings]
     if attrName in list(data.keys()):
       crntTableData = crntTableData+data[attrName]
