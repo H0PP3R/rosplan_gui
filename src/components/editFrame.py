@@ -168,10 +168,11 @@ class EditFrame(Frame):
     '''
     result = []
     if crntTF.numRecords > 0:
-      editVals = crntTF.selectedRowValues
-      del editVals[0]
-      predicateHeaders = list(self.predicateData[crntTF.name].keys())
-      editHeadings = list(self.predicateData[crntTF.name].keys())
+      editVals = crntTF.getSelectedRowValues()
+      del editVals[0] # delete timestep value
+      tableName = crntTF.getName()
+      predicateHeaders = list(self.predicateData[tableName].keys())
+      editHeadings = list(self.predicateData[tableName].keys())
       if 'function_value' not in predicateHeaders:
         editHeadings += ['True/False']
       result = [editHeadings, editVals]
@@ -187,8 +188,8 @@ class EditFrame(Frame):
     '''
     editValuesFrame = Frame(parent)
     editValuesFrame.pack(fill='x', side='top')
-    l = Label(editValuesFrame, text='Select predicate data to update')
-    l.pack(fill='x')
+    label = Label(editValuesFrame, text='Select predicate data to update')
+    label.pack(fill='x')
     return editValuesFrame
 
   def _updateEditEntries(self, parent, editValues):
@@ -229,15 +230,15 @@ class EditFrame(Frame):
     procedure that updates the KnowledgeBase state
     @param self: the class itself
     '''
-    crntVals = self._getState(self.selectedAttrName)
-    newVals = self._getState(self.selectedAttrName, type='edit')
+    crntVals = self._prepareRecords(self.selectedAttrName)
+    newVals = self._prepareRecords(self.selectedAttrName, type='edit')
     facts = {
       'crnt': crntVals,
       'new': newVals
     }
     self.KB.update(facts)
   
-  def _getState(self, selectedAttrName, type='select'):
+  def _prepareRecords(self, selectedAttrName, type='select'):
     '''
     Function that parses and returns the prepared 
     table record values
@@ -249,30 +250,32 @@ class EditFrame(Frame):
     '''
     vals = {'attribute_name': selectedAttrName}
     copyOfEditVals = copy.deepcopy(self.editValues)
+    headings = copyOfEditVals[0]
+    editedVals = copyOfEditVals[1]
     # format the true/false values to 'is_negative'
-    if 'function_value' not in copyOfEditVals[0]:
+    if 'function_value' not in headings:
       if type == 'select':
-        newTf = self._parseIsNegative(copyOfEditVals[1][-1])
+        newTf = self._parseIsNegative(editedVals[-1])
       else:
         newTf = self._parseIsNegative(self.entriesList[-1].get())
       vals['is_negative'] = newTf
-      copyOfEditVals[0].remove('True/False')
-      copyOfEditVals[1].pop(-1)
+      headings.remove('True/False')
+      editedVals.pop(-1)
     # convert other data to 'values'
     values = []
-    for i in range(len(copyOfEditVals[0])): 
-      if copyOfEditVals[0][i] == 'function_value':
+    for i in range(len(headings)): 
+      if headings[i] == 'function_value':
         if type == 'select':
-          vals['function_value'] = copyOfEditVals[1][-1]
+          vals['function_value'] = editedVals[-1]
         else:
           vals['function_value'] = self.entriesList[-1].get()
-        copyOfEditVals[0].remove('function_value')
-        copyOfEditVals[1].pop(-1)
+        headings.remove('function_value')
+        editedVals.pop(-1)
       else:
         pair = KeyValue()
-        pair.key = copyOfEditVals[0][i]
+        pair.key = headings[i]
         if type == 'select':
-          pair.value = copyOfEditVals[1][i]
+          pair.value = editedVals[i]
         else:
           pair.value = self.entriesList[i].get()
         values.append(pair)

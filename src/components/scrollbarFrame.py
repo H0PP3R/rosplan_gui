@@ -3,7 +3,11 @@
 import tkinter as tk                
 
 class ScrollbarFrame(tk.Frame):
-
+  '''
+  Widget that creates a empty frame with a scrollbar
+  that adjusts contents horizontally as the window is adjusted
+  Extension of the Frame widget.
+  '''
   def __init__(self, parent, *args, **kwargs):
     self.count = 0
     super().__init__(parent, *args, **kwargs)
@@ -27,15 +31,6 @@ class ScrollbarFrame(tk.Frame):
 
   def onCanvasConfigure(self, event):
     self.canvas.itemconfigure(self._frame_id, width=self.canvas.winfo_width())
-
-if __name__ == '__main__':
-  root = tk.Tk()
-  fws = ScrollbarFrame(root)
-  buttons = list()
-  for i in range(5):
-      for j in range(25):
-          button = tk.Button(fws.frame, text='Button ' + str(i) + ','+str(j))
-          button.grid(row=j, column=i, sticky='wesn')
-          tk.Grid.columnconfigure(fws.frame, i, weight=1)
-  fws.pack(expand=True, fill=tk.BOTH)
-  root.mainloop()
+  
+  def getFrame(self):
+    return self.frame
