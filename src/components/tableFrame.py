@@ -27,26 +27,26 @@ class TableFrame(Frame):
     self.pack(fill="x")
 
   def _populateTable(self):
+    data = self.data
     '''
     Procedure to populate the table with the data passed to object
     @param self: the class itself
     '''
-    self.headings = self.data[0]
-    self.table = ttk.Treeview(self, columns=self.headings, show='headings', height=self.height)
+    headings = data[0]
+    self.table = ttk.Treeview(self, columns=headings, show='headings', height=self.height)
     self.table.pack(fill="x")
-    self.table['columns'] = tuple(self.headings)
+    self.table['columns'] = tuple(headings)
 
     # Format column
-    for i in range(len(self.headings)):
-      self.table.column(self.headings[i], anchor="center", width=80)
+    for i, heading in enumerate(headings):
+      self.table.column(heading, anchor="center", width=80)
     # Create headings
-    for i in range(len(self.headings)):
-      self.table.heading(self.headings[i], text=str(self.headings[i]), anchor="center")
+    for i, heading in enumerate(headings):
+      self.table.heading(heading, text=str(heading), anchor="center")
     # Add data
-    if len(self.data) > 1:
-      for i in range(1, len(self.data)):
-          self.table.insert(parent='',index='end',iid=i, text='',
-                            values=(tuple(self.data[i])))
+    if len(data) > 1:
+      for i in range(1, len(data)):
+          self.table.insert(parent='',index='end',iid=i, text='',values=(tuple(data[i])))
           self.numRecords += 1
 
   def _selectItem(self, a):
@@ -57,9 +57,8 @@ class TableFrame(Frame):
     '''
     # gets all the values of the selected row
     self.selectedRowValues = self.table.item(self.table.selection())['values']
-    # when table is empty or when the heading of the table is selected
     if self.numRecords < 1 or len(self.selectedRowValues) < 1:
-      pass
+      '''when table is empty or when the heading of the table is selected'''
     else:
       if self.callback != None:
         self.callback(self.name)
@@ -72,7 +71,17 @@ class TableFrame(Frame):
     self.table.selection_remove(self.table.selection()[0])
 
   def getSelectedRowValues(self):
+    '''
+    Function to return values from the selected table row
+    @param self: the class itself
+    @return values from selected row
+    '''
     return self.selectedRowValues
 
   def getName(self):
+    '''
+    Function to return name of table
+    @param self: the class itself
+    @return string name of table
+    '''
     return self.name

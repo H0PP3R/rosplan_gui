@@ -300,8 +300,4 @@ class EditFrame(Frame):
     @param trueFalse: string of either 'True' or 'False'
     @return boolean that is the opposite of the parameter trueFalse
     '''
-    if bool(trueFalse):
-      trueFalse = True
-    else:
-      trueFalse = False
-    return not trueFalse
+    return not bool(trueFalse)

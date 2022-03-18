@@ -27,10 +27,26 @@ class ScrollbarFrame(tk.Frame):
     self.canvas.bind('<Configure>', self.onCanvasConfigure)
 
   def onFrameConfigure(self, event):
+    '''
+    Procedure that configures the scroll region to the whole frame
+    @param self: the class itself
+    @param event: event the triggered this method
+    '''
     self.canvas.configure(scrollregion=self.frame.bbox('all'))
 
   def onCanvasConfigure(self, event):
+    '''
+    Procedure that configures the canvas to span the width 
+    of the frame within it
+    @param self: the class itself
+    @param event: event the triggered this method
+    '''
     self.canvas.itemconfigure(self.frameID, width=self.canvas.winfo_width())
 
   def getFrame(self):
+    '''
+    Function to return the frame within self
+    @param self: the class itself
+    @return frame widget
+    '''
     return self.frame
