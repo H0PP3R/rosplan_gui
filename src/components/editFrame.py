@@ -3,7 +3,7 @@ from tkinter import Entry, Label, Frame, Button, StringVar, ttk
 from tkinter.messagebox import askyesno
 from diagnostic_msgs.msg import KeyValue
 
-from .tableFrame import TableFrame as tf
+from .tableFrame import TableFrame as tFrame
 from .decimalEntry import DecimalEntry
 
 class EditFrame(Frame):
@@ -19,14 +19,16 @@ class EditFrame(Frame):
     @param parent: the frame in which this widget will be in
     @param controller: controls the order of the frames
     @param data: formatted predicate and proposition data
-    @param KB: instance of KnowledgeBaseNode that interacts with the Knowledge Base
+    @param knowledgeBase: instance of KnowledgeBaseNode that interacts with the Knowledge Base
     '''
     Frame.__init__(self, parent)
+    self.listofTP = {}
+    self.entriesList = []
     self.controller = controller
     self.tableData = data['tableData']
     self.predicateData = data['predicateData']
     self.headerText = data['headerText']
-    self.KB = KB
+    self.knowledgeBase = KB
     self.predNames = list(self.predicateData.keys())
     self.predParameters = list(self.predicateData.values())
     self.selectedTables = dict(zip(self.predNames, [0]*len(self.predNames)))
@@ -34,7 +36,7 @@ class EditFrame(Frame):
     self.editValues = []
     self.selectedAttrName = ''
     self._populateFrame()
-  
+
   def _populateFrame(self):
     '''
     Procedure to create and populate the EditFrame with widgets
@@ -43,7 +45,7 @@ class EditFrame(Frame):
     self.mainFrame = Frame(self)
     self.mainFrame.pack(fill='x')
 
-    editLabel = Label(self.mainFrame, 
+    editLabel = Label(self.mainFrame,
                       text='Edit the most recent predicate value', anchor='w')
     editLabel.pack(fill='x')
     self._createTableFrames(self.mainFrame)
@@ -53,17 +55,17 @@ class EditFrame(Frame):
     self.editValuesFrame = self._createEditEntries(self.mainFrame)
 
     self._createButtons(self.mainFrame)
-  
+
   def _confirm(self):
     '''
     Procedure to create a pop up for user to double confirm their changes
-    before updating 
+    before updating
     @param self: the class itself
     '''
     ask = askyesno(title='confirmation', message='Confirm your changes')
     if ask:
       self._updateRecord()
-  
+
   def _createButtons(self, parent):
     '''
     Procedure to create the buttons used in the EditFrame
@@ -79,7 +81,7 @@ class EditFrame(Frame):
     bottom.pack(side='bottom', fill='both', expand=True)
     submitButton = Button(buttonFrame, text='Apply', command=self._confirm)
     submitButton.pack(in_=top, side='left')
-    switchFrameButton = Button(buttonFrame, text ='View', 
+    switchFrameButton = Button(buttonFrame, text ='View',
                               command=lambda: self.controller.showFrame('ViewFrame'))
     switchFrameButton.pack(in_=top, side='left')
 
@@ -89,25 +91,26 @@ class EditFrame(Frame):
     @param self: the class itself
     @param parent: the frame in which this widget will be in
     '''
-    self.listofTP = {}
     predNames = self.predNames
     predParameters = self.predParameters
     headings = self.headerText
     for i in range(len(self.predNames)):
-      tpLabel = Label(parent, text=headings[i], 
+      tpLabel = Label(parent, text=headings[i],
                 borderwidth=2, relief='raised', anchor='w')
       tpLabel.pack(fill='x')
-      crntTableData = self._parseTableData(self.tableData, predNames[i], predParameters[i])
+      crntTableData = self._parseTableData(
+        self.tableData, predNames[i], predParameters[i]
+      )
       frame = Frame(parent)
       frame.pack(fill='x')
-      tf(frame, crntTableData, height=1, callback=self.callback, name=predNames[i])
+      tFrame(frame, crntTableData, height=1, callback=self.callback, name=predNames[i])
       self.listofTP[predNames[i]] = frame
 
   def _parseTableData(self, data, attrName, attrVals):
     '''
     Function that prepares tableData and returns the prepared data
     @param self: the class itself
-    @param data: tableData 
+    @param data: tableData
     @param attrName: string name of attribute
     @param attrVals: dictionary of attribute values
     @return prepared attribute table data
@@ -133,8 +136,11 @@ class EditFrame(Frame):
       crntFrame = self.listofTP[predNames[i]]
       for widgets in crntFrame.winfo_children():
         widgets.destroy()
-      crntTableData = self._parseTableData(self.tableData, predNames[i], predParameters[i])
-      tf(crntFrame, crntTableData, height=1, callback=self.callback, name=predNames[i])
+      crntTableData = self._parseTableData(
+        self.tableData, predNames[i], predParameters[i]
+      )
+      tFrame(crntFrame, crntTableData, height=1, 
+            callback=self.callback, name=predNames[i])
 
   def callback(self, attrName):
     '''
@@ -154,10 +160,14 @@ class EditFrame(Frame):
 
         self.selectedTables[attrName] = 1
         self.prvSelected = attrName
-        self.editValues = self._parseEditVals(self.listofTP[attrName].winfo_children()[0])
+        self.editValues = self._parseEditVals(
+          self.listofTP[attrName].winfo_children()[0]
+        )
         if len(self.editValues) > 0:
           self._updateEditEntries(self.editValuesFrame, self.editValues)
-        self.selectedAttrName = list(self.selectedTables.keys())[list(self.selectedTables.values()).index(1)]
+        self.selectedAttrName = list(self.selectedTables.keys())[
+          list(self.selectedTables.values()).index(1)
+        ]
 
   def _parseEditVals(self, crntTF):
     '''
@@ -177,10 +187,10 @@ class EditFrame(Frame):
         editHeadings += ['True/False']
       result = [editHeadings, editVals]
     return result
-  
+
   def _createEditEntries(self, parent):
     '''
-    Function that creates the frame that displays selected values 
+    Function that creates the frame that displays selected values
     to be edited and returns it.
     @param self: the class itself
     @param parent: the frame in which this widget will be in
@@ -194,28 +204,28 @@ class EditFrame(Frame):
 
   def _updateEditEntries(self, parent, editValues):
     '''
-    Procedure that updates the frame that contains the selected editable 
+    Procedure that updates the frame that contains the selected editable
     values.
     @param self: the class itself
     @param parent: the frame in which this widget will be in
     @param editValues: values to update in the frame
     '''
-    self.entriesList = []
     for widgets in parent.winfo_children():
       widgets.destroy()
-    for i in range(len(editValues[0])):
-      label = Label(parent, text=editValues[0][i], borderwidth=1, relief='raised')
+    for i, editValue in enumerate(editValues[0]):
+      label = Label(parent, text=editValue, borderwidth=1, relief='raised')
       label.grid(row=0, column=i, sticky='nsew')
-      if editValues[0][i] == 'function_value':
+      if editValue == 'function_value':
         entry = DecimalEntry(parent)
         entry.insert(0, editValues[1][i])
-      elif editValues[0][i] == 'True/False':
+      elif editValue == 'True/False':
         vals = ['True','False']
         idx = vals.index(editValues[1][i])
         entry = ttk.Combobox(parent, values=vals)
         entry.current(idx)
       else:
-        entry = Entry(parent, textvariable=StringVar(), relief='sunken', borderwidth=1)
+        entry = Entry(parent, textvariable=StringVar(), 
+                      relief='sunken', borderwidth=1)
         entry.insert(0, editValues[1][i])
       entry.grid(row=1, column=i, sticky='nsew')
       # Insert current values
@@ -223,24 +233,24 @@ class EditFrame(Frame):
       parent.grid_columnconfigure(i, weight=1)
     parent.grid_rowconfigure(0, weight=1)
     parent.grid_rowconfigure(1, weight=1)
-  
+
   def _updateRecord(self):
     '''
     Procedure that sends the records to update to the KnowledgeBaseNode
     procedure that updates the KnowledgeBase state
     @param self: the class itself
     '''
-    crntVals = self._prepareRecords(self.selectedAttrName)
+    crntVals = self._prepareRecords(self.selectedAttrName, type='select')
     newVals = self._prepareRecords(self.selectedAttrName, type='edit')
     facts = {
       'crnt': crntVals,
       'new': newVals
     }
-    self.KB.update(facts)
-  
+    self.knowledgeBase.update(facts)
+
   def _prepareRecords(self, selectedAttrName, type='select'):
     '''
-    Function that parses and returns the prepared 
+    Function that parses and returns the prepared
     table record values
     @param self: the class itself
     @param selectedAttrName: string name of the selected attribute
@@ -263,8 +273,8 @@ class EditFrame(Frame):
       editedVals.pop(-1)
     # convert other data to 'values'
     values = []
-    for i in range(len(headings)): 
-      if headings[i] == 'function_value':
+    for i, heading in enumerate(headings):
+      if heading == 'function_value':
         if type == 'select':
           vals['function_value'] = editedVals[-1]
         else:
@@ -273,7 +283,7 @@ class EditFrame(Frame):
         editedVals.pop(-1)
       else:
         pair = KeyValue()
-        pair.key = headings[i]
+        pair.key = heading
         if type == 'select':
           pair.value = editedVals[i]
         else:
@@ -282,14 +292,16 @@ class EditFrame(Frame):
     vals['values'] = values
     return vals
 
-  def _parseIsNegative(self, tf):
+  def _parseIsNegative(self, trueFalse):
     '''
     Function to parse string True and False, prepare
     it for is_negative and returns it
     @param self: the class itself
-    @param tf: string of either 'True' or 'False'
-    @return boolean that is the opposite of the parameter tf
+    @param trueFalse: string of either 'True' or 'False'
+    @return boolean that is the opposite of the parameter trueFalse
     '''
-    if tf=='True': tf = True
-    else: tf = False
-    return not tf
+    if bool(trueFalse): 
+      trueFalse = True
+    else: 
+      trueFalse = False
+    return not trueFalse
