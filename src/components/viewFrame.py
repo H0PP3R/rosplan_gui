@@ -1,7 +1,7 @@
 from tkinter import Frame, Button
 
-from .collapsibleFrame import CollapsibleFrame as cf
-from .tableFrame import TableFrame as tf
+from .collapsibleFrame import CollapsibleFrame as cFrame
+from .tableFrame import TableFrame as tFrame
 
 class ViewFrame(Frame):
   '''
@@ -18,6 +18,7 @@ class ViewFrame(Frame):
     @param data: formatted predicate and proposition data
     '''
     Frame.__init__(self, parent)
+    self.listofCP = []
     self.controller = controller
     self.tableData = data['tableData']
     self.predicateData = data['predicateData']
@@ -25,7 +26,7 @@ class ViewFrame(Frame):
     self.predNames = list(self.predicateData.keys())
     self.predParameters = list(self.predicateData.values())
     self._populateFrame()
-  
+
   def _populateFrame(self):
     '''
     Procedure to create and populate the ViewFrame with widgets
@@ -34,10 +35,10 @@ class ViewFrame(Frame):
     predicatesFrame = self._createPredicateFrames(self)
     predicatesFrame.pack(fill='x')
 
-    button = Button(self, text ='Edit/Delete', 
+    button = Button(self, text ='Edit/Delete',
                     command=lambda: self.controller.showFrame('EditFrame'))
     button.pack()
-  
+
   def updateCFrame(self):
     '''
     Procedure to update the CollapsibleFrames to display new tableData
@@ -51,8 +52,10 @@ class ViewFrame(Frame):
       crntFrame = self.listofCP[i].getSubFrame()
       for widgets in crntFrame.winfo_children():
         widgets.destroy()
-      crntTableData = self._parseTableData(self.tableData, predNames[i], predParameters[i])
-      tf(crntFrame, crntTableData, height=len(crntTableData))
+      crntTableData = self._parseTableData(
+        self.tableData, predNames[i], predParameters[i]
+      )
+      tFrame(crntFrame, crntTableData, height=len(crntTableData))
 
   def _createPredicateFrames(self, parent):
     '''
@@ -61,18 +64,19 @@ class ViewFrame(Frame):
     @param parent: the frame in which the predicate frames will be in
     @return a frame widget holding all the predicate frames
     '''
-    self.listofCP = []
     predNames = self.predNames
     predParameters = self.predParameters
     predicatesFrame = Frame(parent)
 
     predicateHeaders = self.headerText
     for i in range(len(self.predNames)):
-      cf = self._createCollapsibleFrame(predicatesFrame, predicateHeaders[i])
-      self.listofCP.append(cf)
+      cFrame = self._createCollapsibleFrame(predicatesFrame, predicateHeaders[i])
+      self.listofCP.append(cFrame)
       # Parse current predicate propositional data and show as a table
-      crntTableData = self._parseTableData(self.tableData, predNames[i], predParameters[i])
-      tf(cf.getSubFrame(), crntTableData, height=len(crntTableData))
+      crntTableData = self._parseTableData(
+        self.tableData, predNames[i], predParameters[i]
+      )
+      tFrame(cFrame.getSubFrame(), crntTableData, height=len(crntTableData))
     return predicatesFrame
 
   def _createCollapsibleFrame(self, parent, headerText):
@@ -83,7 +87,7 @@ class ViewFrame(Frame):
     @param headerText: labels for the tableData
     @return CollapsibleFrame with specific headerText label
     '''
-    predicateCF = cf(parent, text=headerText, relief='raised', borderwidth=1)
+    predicateCF = cFrame(parent, text=headerText, relief='raised', borderwidth=1)
     predicateCF.pack(fill='x', expand=1, pady=2, padx=2, anchor='n')
     return predicateCF
 
@@ -91,7 +95,7 @@ class ViewFrame(Frame):
     '''
     Function that prepares tableData and returns the prepared data
     @param self: the class itself
-    @param data: tableData 
+    @param data: tableData
     @param attrName: string name of attribute
     @param attrVals: dictionary of attribute values
     @return prepared attribute table data
