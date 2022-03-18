@@ -1,4 +1,4 @@
-from tkinter import StringVar, Entry, Tk
+from tkinter import StringVar, Entry
 
 class DecimalEntry(Entry):
   '''
@@ -8,16 +8,16 @@ class DecimalEntry(Entry):
   def __init__(self, master=None, **kwargs):
     self.var = StringVar()
     Entry.__init__(self, master, textvariable=self.var, **kwargs)
-    self.old_value = ''
+    self.oldValue = ''
     self.var.trace('w', self.check)
     self.get, self.set = self.var.get, self.var.set
 
   def check(self, *args):
     if self.get() == '':
-      self.old_value = self.get()
+      self.oldValue = self.get()
     else:
-      try: 
+      try:
         float(self.get())
-        self.old_value = self.get()
+        self.oldValue = self.get()
       except ValueError:
-        self.set(self.old_value)
+        self.set(self.oldValue)

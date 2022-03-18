@@ -1,7 +1,7 @@
 # Component taken from:
 # https://stackoverflow.com/a/13169685
 import tkinter as tk
-from tkinter import ttk 
+from tkinter import ttk
 
 class CollapsibleFrame(tk.Frame):
   '''
@@ -15,24 +15,24 @@ class CollapsibleFrame(tk.Frame):
     self.show = tk.IntVar()
     self.show.set(0)
 
-    self.title_frame = ttk.Frame(self)
-    self.title_frame.pack(fill="x", expand=1)
+    self.titleFrame = ttk.Frame(self)
+    self.titleFrame.pack(fill="x", expand=1)
 
-    ttk.Label(self.title_frame, text=text).pack(side="left", fill="x", expand=1)
+    ttk.Label(self.titleFrame, text=text).pack(side="left", fill="x", expand=1)
 
-    self.toggle_button = ttk.Checkbutton(self.title_frame, width=2, text='+', command=self.toggle,
+    self.toggleButton = ttk.Checkbutton(self.titleFrame, width=2, text='+', command=self.toggle,
                                         variable=self.show, style='Toolbutton')
-    self.toggle_button.pack(side="left")
+    self.toggleButton.pack(side="left")
 
-    self.sub_frame = tk.Frame(self, relief="sunken", borderwidth=1)
+    self.subFrame = tk.Frame(self, relief="sunken", borderwidth=1)
 
   def toggle(self):
     if bool(self.show.get()):
-      self.sub_frame.pack(fill="x", expand=1)
-      self.toggle_button.configure(text='-')
+      self.subFrame.pack(fill="x", expand=1)
+      self.toggleButton.configure(text='-')
     else:
       self.sub_frame.forget()
-      self.toggle_button.configure(text='+')
-  
+      self.toggleButton.configure(text='+')
+
   def getSubFrame(self):
-    return self.sub_frame
+    return self.subFrame

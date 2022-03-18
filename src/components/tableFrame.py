@@ -35,7 +35,7 @@ class TableFrame(Frame):
     self.table = ttk.Treeview(self, columns=self.headings, show='headings', height=self.height)
     self.table.pack(fill="x")
     self.table['columns'] = tuple(self.headings)
-    
+
     # Format column
     for i in range(len(self.headings)):
       self.table.column(self.headings[i], anchor="center", width=80)
@@ -46,9 +46,9 @@ class TableFrame(Frame):
     if len(self.data) > 1:
       for i in range(1, len(self.data)):
           self.table.insert(parent='',index='end',iid=i, text='',
-            values=(tuple(self.data[i])))
+                            values=(tuple(self.data[i])))
           self.numRecords += 1
-  
+
   def _selectItem(self, a):
     '''
     Procedure to called when table is clicked and gets the selected values
@@ -61,7 +61,7 @@ class TableFrame(Frame):
     if self.numRecords < 1 or len(self.selectedRowValues) < 1:
       pass
     else:
-      if self.callback != None: 
+      if self.callback != None:
         self.callback(self.name)
 
   def deselect(self):

@@ -3,7 +3,7 @@ from tkinter import Tk, Grid
 from components.viewFrame import ViewFrame
 from components.editFrame import EditFrame
 from components.scrollbarFrame import ScrollbarFrame
-from scripts.KnowledgeBaseNode import KnowledgeBaseNode
+from scripts.knowledgeBaseNode import KnowledgeBaseNode
 
 APP_SIZE = (640,640)
 
@@ -14,8 +14,8 @@ class App(Tk):
   '''
   def __init__(self):
     '''
-    Constructor, initialises variables to hold important data 
-    from the KnowledgeBase. 
+    Constructor, initialises variables to hold important data
+    from the KnowledgeBase.
     Initialises the KnowledgeBaseNode.
     @param self: the class itself
     '''
@@ -23,14 +23,14 @@ class App(Tk):
     self.tableData = None
     self.predicateData = None
     self.headerText = None
-    self.KB = KnowledgeBaseNode(self._callback)
+    self.knowledgeBase = KnowledgeBaseNode(self._callback)
     self._setInitialData()
     self.headerText = self._createHeaderText()
     self.geometry(f'{APP_SIZE[0]}x{APP_SIZE[1]}')
 
-    self._populateFrame()  
+    self._populateFrame()
     self.mainloop()
-  
+
   def _populateFrame(self):
     '''
     Procedure to create and populate the App's main frame with widgets
@@ -46,17 +46,17 @@ class App(Tk):
     }
     self.frames = {}
     self.viewFrame = ViewFrame(parent=container.getFrame(), controller=self, data=data)
-    self.editFrame = EditFrame(parent=container.getFrame(), controller=self, data=data,
+    self.editFrame = EditFrame(parent=container.getFrame(), controller=self, data=data, 
                                 KB=self.knowledgeBase)
     # Make frames stacked on top of on another
     self.frames['ViewFrame'] = self.viewFrame
     self.frames['EditFrame'] = self.editFrame
-    for frame in list(self.frames.values()): 
+    for frame in list(self.frames.values()):
       frame.grid(row=0, column=0, sticky='wesn')
     Grid.columnconfigure(container.getFrame(),0,weight=1)
     # Puts ViewFrame on top of the other frames
     self.showFrame('ViewFrame')
-  
+
   def showFrame(self, frameName):
     '''
     Procedure to raise the frame for the given frame name
@@ -74,32 +74,33 @@ class App(Tk):
     @param data: StatusUpdate object
     '''
     self._updateFrame()
-  
+
   def _setInitialData(self):
     '''
     Procedure that sets the data from the KB.
     @param self: the class itself
     '''
-    predicateData = self.KB.getPredicates()
-    numPredicateData = self.KB.getNumPredicates()
-    numPredicateData = self._parseNumericPropTableData(numPredicateData)
+    predicateData = self.knowledgeBase.getPredicates()
+    numPredicateData = self.knowledgeBase.getNumPredicates()
+    for i in numPredicateData:
+      numPredicateData[i]['function_value'] = 'function_value'
     predicateData.update(numPredicateData)
-    tableData = self.KB.getPropositions()
-    numericPropData = self.KB.getNumPropositions()
+    tableData = self.knowledgeBase.getPropositions()
+    numericPropData = self.knowledgeBase.getNumPropositions()
     tableData.update(numericPropData)
     # predicateData used mostly to populate labels for tableData
     self.predicateData = predicateData
     # tableData used to populate table frames
     self.tableData = tableData
-    
+
   def _updateTableData(self):
     '''
     Procedure that identifies new data added or changed in the KB
     and updates the tableData accordingly
     @param self: the class itself
     '''
-    tableData = self.KB.getPropositions()
-    numericPropData = self.KB.getNumPropositions()
+    tableData = self.knowledgeBase.getPropositions()
+    numericPropData = self.knowledgeBase.getNumPropositions()
     tableData.update(numericPropData)
     predicateNames = list(tableData.keys())
     crntPredicateNames = list(self.tableData.keys())
@@ -120,17 +121,6 @@ class App(Tk):
         tmp[-1] = 'False'
         if tmp not in self.tableData[predName]:
           self.tableData[predName].append(tmp)
-  
-  def _parseNumericPropTableData(self, propositions):
-    '''
-    Function that adds a function_value entry onto propositions
-    @param self: the class itself
-    @param propositions: dictionary with numeric proposition data
-    @return the updated propositions dictionary
-    '''
-    for i in propositions:
-      propositions[i]['function_value'] = 'function_value'
-    return propositions
 
   def _createHeaderText(self):
     '''
@@ -141,13 +131,12 @@ class App(Tk):
     predNames = list(self.predicateData.keys())
     predParameters = list(self.predicateData.values())
     headerTexts = []
-    for i in range(len(predNames)):
-      tmp = f'{predNames[i]}'
+    for i, predName in enumerate(predNames):
       crntPredicateParams = predParameters[i]
       keys = list(crntPredicateParams.keys())
       for j in range(len(crntPredicateParams)):
-        tmp += f' ?{keys[j]} - {crntPredicateParams[keys[j]]}'
-      headerTexts.append(f'({tmp})')
+        predName += f' ?{keys[j]} - {crntPredicateParams[keys[j]]}'
+      headerTexts.append(f'({predName})')
     return headerTexts
 
   def _updateFrame(self):
