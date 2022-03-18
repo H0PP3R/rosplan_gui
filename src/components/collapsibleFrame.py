@@ -22,7 +22,7 @@ class CollapsibleFrame(tk.Frame):
     self.show.set(0)
     self.text = text
     self._populateFrame()
-  
+
   def _populateFrame(self):
     '''
     Procedure that creates and populates the frame with
@@ -42,7 +42,7 @@ class CollapsibleFrame(tk.Frame):
 
   def _toggle(self):
     '''
-    Procedure to toggle the state of the collapsed frame 
+    Procedure to toggle the state of the collapsed frame
     The frame will collapse it it is open and close if expanded
     @param self: the class itself
     '''

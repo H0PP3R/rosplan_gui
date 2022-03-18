@@ -36,7 +36,7 @@ class ScrollbarFrame(tk.Frame):
 
   def onCanvasConfigure(self, event):
     '''
-    Procedure that configures the canvas to span the width 
+    Procedure that configures the canvas to span the width
     of the frame within it
     @param self: the class itself
     @param event: event the triggered this method
