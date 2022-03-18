@@ -3,7 +3,7 @@ from tkinter import Tk, Grid
 from components.viewFrame import ViewFrame
 from components.editFrame import EditFrame
 from components.scrollbarFrame import ScrollbarFrame
-from scripts.KB_CRUD import KnowledgeBaseNode
+from scripts.KnowledgeBaseNode import KnowledgeBaseNode
 
 APP_SIZE = (640,640)
 
@@ -29,7 +29,6 @@ class App(Tk):
     self.geometry(f'{APP_SIZE[0]}x{APP_SIZE[1]}')
 
     self._populateFrame()  
-
     self.mainloop()
   
   def _populateFrame(self):
@@ -46,14 +45,14 @@ class App(Tk):
       'headerText': self.headerText,
     }
     self.frames = {}
-    self.viewFrame = ViewFrame(parent=container.frame, controller=self, data=data)
-    self.editFrame = EditFrame(parent=container.frame, controller=self, data=data, KB=self.KB)
+    self.viewFrame = ViewFrame(parent=container.getFrame(), controller=self, data=data)
+    self.editFrame = EditFrame(parent=container.getFrame(), controller=self, data=data, KB=self.KB)
     # Make frames stacked on top of on another
     self.frames['ViewFrame'] = self.viewFrame
     self.frames['EditFrame'] = self.editFrame
     for frame in list(self.frames.values()): 
       frame.grid(row=0, column=0, sticky='wesn')
-    Grid.columnconfigure(container.frame,0,weight=1)
+    Grid.columnconfigure(container.getFrame(),0,weight=1)
     # Puts ViewFrame on top of the other frames
     self.showFrame('ViewFrame')
   

@@ -1,6 +1,10 @@
 from tkinter import StringVar, Entry, Tk
 
 class DecimalEntry(Entry):
+  '''
+  Widget that creates a decimal only entry
+  Extension of the Entry widget.
+  '''
   def __init__(self, master=None, **kwargs):
     self.var = StringVar()
     Entry.__init__(self, master, textvariable=self.var, **kwargs)
@@ -17,10 +21,3 @@ class DecimalEntry(Entry):
         self.old_value = self.get()
       except ValueError:
         self.set(self.old_value)
-
-#demo:
-if __name__ == '__main__':
-  window = Tk()
-  From_entry=DecimalEntry(window, width=25)
-  From_entry.grid(column=1,row=2,padx=5)
-  window.mainloop()

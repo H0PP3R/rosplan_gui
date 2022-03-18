@@ -4,7 +4,11 @@ import tkinter as tk
 from tkinter import ttk 
 
 class CollapsibleFrame(tk.Frame):
-
+  '''
+  Widget that creates a collapsible frame with a name.
+  Initially collapsed.
+  Extension of the Frame widget.
+  '''
   def __init__(self, parent, text="", *args, **options):
     tk.Frame.__init__(self, parent, *args, **options)
 
@@ -29,3 +33,6 @@ class CollapsibleFrame(tk.Frame):
     else:
       self.sub_frame.forget()
       self.toggle_button.configure(text='+')
+  
+  def getSubFrame(self):
+    return self.sub_frame

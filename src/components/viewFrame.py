@@ -48,7 +48,7 @@ class ViewFrame(Frame):
     # destroys the tableFrames within the collapsible frames' subframe
     # and recreate the tableFrames with new tableData
     for i in range(len(self.predNames)):
-      crntFrame = self.listofCP[i].sub_frame
+      crntFrame = self.listofCP[i].getSubFrame()
       for widgets in crntFrame.winfo_children():
         widgets.destroy()
       crntTableData = self._parseTableData(self.tableData, predNames[i], predParameters[i])
@@ -72,7 +72,7 @@ class ViewFrame(Frame):
       self.listofCP.append(cf)
       # Parse current predicate propositional data and show as a table
       crntTableData = self._parseTableData(self.tableData, predNames[i], predParameters[i])
-      tf(cf.sub_frame, crntTableData, height=len(crntTableData))
+      tf(cf.getSubFrame(), crntTableData, height=len(crntTableData))
     return predicatesFrame
 
   def _createCollapsibleFrame(self, parent, headerText):
