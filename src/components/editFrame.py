@@ -133,8 +133,11 @@ class EditFrame(Frame):
       crntFrame = self.listofTP[predNames[i]]
       for widgets in crntFrame.winfo_children():
         widgets.destroy()
-      crntTableData = self._parseTableData(self.tableData, predNames[i], predParameters[i])
-      tf(crntFrame, crntTableData, height=1, callback=self.callback, name=predNames[i])
+      crntTableData = self._parseTableData(
+        self.tableData, predNames[i], predParameters[i]
+      )
+      tFrame(crntFrame, crntTableData, height=1,
+            callback=self.callback, name=predNames[i])
 
   def callback(self, attrName):
     '''
@@ -215,7 +218,8 @@ class EditFrame(Frame):
         entry = ttk.Combobox(parent, values=vals)
         entry.current(idx)
       else:
-        entry = Entry(parent, textvariable=StringVar(), relief='sunken', borderwidth=1)
+        entry = Entry(parent, textvariable=StringVar(),
+                      relief='sunken', borderwidth=1)
         entry.insert(0, editValues[1][i])
       entry.grid(row=1, column=i, sticky='nsew')
       # Insert current values
@@ -290,6 +294,8 @@ class EditFrame(Frame):
     @param tf: string of either 'True' or 'False'
     @return boolean that is the opposite of the parameter tf
     '''
-    if tf=='True': tf = True
-    else: tf = False
-    return not tf
+    if bool(trueFalse):
+      trueFalse = True
+    else:
+      trueFalse = False
+    return not trueFalse
