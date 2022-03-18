@@ -139,7 +139,7 @@ class EditFrame(Frame):
       crntTableData = self._parseTableData(
         self.tableData, predNames[i], predParameters[i]
       )
-      tFrame(crntFrame, crntTableData, height=1, 
+      tFrame(crntFrame, crntTableData, height=1,
             callback=self.callback, name=predNames[i])
 
   def callback(self, attrName):
@@ -224,7 +224,7 @@ class EditFrame(Frame):
         entry = ttk.Combobox(parent, values=vals)
         entry.current(idx)
       else:
-        entry = Entry(parent, textvariable=StringVar(), 
+        entry = Entry(parent, textvariable=StringVar(),
                       relief='sunken', borderwidth=1)
         entry.insert(0, editValues[1][i])
       entry.grid(row=1, column=i, sticky='nsew')
@@ -300,8 +300,8 @@ class EditFrame(Frame):
     @param trueFalse: string of either 'True' or 'False'
     @return boolean that is the opposite of the parameter trueFalse
     '''
-    if bool(trueFalse): 
+    if bool(trueFalse):
       trueFalse = True
-    else: 
+    else:
       trueFalse = False
     return not trueFalse

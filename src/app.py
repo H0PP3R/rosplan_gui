@@ -46,7 +46,7 @@ class App(Tk):
     }
     self.frames = {}
     self.viewFrame = ViewFrame(parent=container.getFrame(), controller=self, data=data)
-    self.editFrame = EditFrame(parent=container.getFrame(), controller=self, data=data, 
+    self.editFrame = EditFrame(parent=container.getFrame(), controller=self, data=data,
                                 KB=self.knowledgeBase)
     # Make frames stacked on top of on another
     self.frames['ViewFrame'] = self.viewFrame
