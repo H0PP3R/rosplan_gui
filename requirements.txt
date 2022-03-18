@@ -2,7 +2,7 @@ autopep8==1.6.0
 catkin-pkg==0.4.24
 distro==1.6.0
 docutils==0.18.1
-numpy==1.22.3
+numpy==1.21.0
 pep8==1.7.1
 pycodestyle==2.8.0
 pyparsing==3.0.7
