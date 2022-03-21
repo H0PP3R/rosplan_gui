@@ -248,10 +248,7 @@ class EditFrame(Frame):
       'crnt': crntVals,
       'new': newVals
     }
-    if facts['new']['is_negative']:
-      self.knowledgeBase.delete(facts)
-    else:
-      self.knowledgeBase.update(facts)
+    self.knowledgeBase.update(facts)
     self.selectedTables[self.selectedAttrName] = 0
 
   def _prepareRecords(self, selectedAttrName, type='select'):
@@ -265,6 +262,7 @@ class EditFrame(Frame):
     @return dictionary of prepared table record values
     '''
     vals = {'attribute_name': selectedAttrName}
+    # print(self.editEntriesList)
     copyOfEditVals = copy.deepcopy(self.editValues)
     headings = copyOfEditVals[0]
     editedVals = copyOfEditVals[1]
@@ -273,6 +271,7 @@ class EditFrame(Frame):
       if type == 'select':
         newTf = self._parseIsNegative(editedVals[-1])
       else:
+        print(self.entriesList[-1].get())
         newTf = self._parseIsNegative(self.entriesList[-1].get())
       vals['is_negative'] = newTf
       headings.remove('True/False')
@@ -296,6 +295,7 @@ class EditFrame(Frame):
           pair.value = self.entriesList[i].get()
         values.append(pair)
     vals['values'] = values
+    print(vals)
     return vals
 
   def _parseIsNegative(self, trueFalse):
