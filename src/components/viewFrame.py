@@ -1,4 +1,4 @@
-from tkinter import Frame, Button
+from tkinter import Frame, Button, Label
 
 from .collapsibleFrame import CollapsibleFrame as cFrame
 from .tableFrame import TableFrame as tFrame
@@ -69,7 +69,12 @@ class ViewFrame(Frame):
     predicatesFrame = Frame(parent)
 
     predicateHeaders = self.headerText
+    firstFluent = True
     for i in range(len(self.predNames)):
+      if 'function_value' in self.predicateData[self.predNames[i]] and firstFluent:
+        l = Label(predicatesFrame, text='Numeric Fluents')
+        l.pack(fill='x')
+        firstFluent = False
       cFrame = self._createCollapsibleFrame(predicatesFrame, predicateHeaders[i])
       self.listofCP.append(cFrame)
       # Parse current predicate propositional data and show as a table
