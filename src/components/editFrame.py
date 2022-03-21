@@ -155,6 +155,7 @@ class EditFrame(Frame):
         self.selectedTables[self.prvSelected] = 0
       else:
         if list(self.selectedTables.values()).count(1) > 0:
+          x = self.listofTP[self.prvSelected].winfo_children()
           self.listofTP[self.prvSelected].winfo_children()[0].deselect()
           self.selectedTables[self.prvSelected] = 0
 
@@ -210,6 +211,7 @@ class EditFrame(Frame):
     @param parent: the frame in which this widget will be in
     @param editValues: values to update in the frame
     '''
+    self.entriesList = []
     for widgets in parent.winfo_children():
       widgets.destroy()
     for i, editValue in enumerate(editValues[0]):
@@ -246,7 +248,11 @@ class EditFrame(Frame):
       'crnt': crntVals,
       'new': newVals
     }
-    self.knowledgeBase.update(facts)
+    if facts['new']['is_negative']:
+      self.knowledgeBase.delete(facts)
+    else:
+      self.knowledgeBase.update(facts)
+    self.selectedTables[self.selectedAttrName] = 0
 
   def _prepareRecords(self, selectedAttrName, type='select'):
     '''
@@ -259,6 +265,7 @@ class EditFrame(Frame):
     @return dictionary of prepared table record values
     '''
     vals = {'attribute_name': selectedAttrName}
+    # print(self.editEntriesList)
     copyOfEditVals = copy.deepcopy(self.editValues)
     headings = copyOfEditVals[0]
     editedVals = copyOfEditVals[1]
@@ -267,6 +274,7 @@ class EditFrame(Frame):
       if type == 'select':
         newTf = self._parseIsNegative(editedVals[-1])
       else:
+        print(self.entriesList[-1].get())
         newTf = self._parseIsNegative(self.entriesList[-1].get())
       vals['is_negative'] = newTf
       headings.remove('True/False')
@@ -290,6 +298,7 @@ class EditFrame(Frame):
           pair.value = self.entriesList[i].get()
         values.append(pair)
     vals['values'] = values
+    print(vals)
     return vals
 
   def _parseIsNegative(self, trueFalse):
@@ -300,4 +309,8 @@ class EditFrame(Frame):
     @param trueFalse: string of either 'True' or 'False'
     @return boolean that is the opposite of the parameter trueFalse
     '''
-    return not bool(trueFalse)
+    if trueFalse == 'True':
+      trueFalse = True
+    else:
+      trueFalse = False
+    return not trueFalse

@@ -57,8 +57,10 @@ class TableFrame(Frame):
     '''
     # gets all the values of the selected row
     self.selectedRowValues = self.table.item(self.table.selection())['values']
-    if self.numRecords < 1 or len(self.selectedRowValues) < 1:
+    if self.numRecords < 1 :
       '''when table is empty or when the heading of the table is selected'''
+    if len(self.selectedRowValues) < 1:
+      pass
     else:
       if self.callback != None:
         self.callback(self.name)
