@@ -1,4 +1,4 @@
-# Component taken from:
+# Base component taken from:
 # https://stackoverflow.com/a/57745179
 import tkinter as tk
 

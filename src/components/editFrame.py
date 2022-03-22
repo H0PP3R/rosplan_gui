@@ -94,7 +94,12 @@ class EditFrame(Frame):
     predNames = self.predNames
     predParameters = self.predParameters
     headings = self.headerText
+    firstFluent = True
     for i in range(len(self.predNames)):
+      if 'function_value' in self.predicateData[self.predNames[i]] and firstFluent:
+        l = Label(parent, text='Numeric Fluents')
+        l.pack(fill='x')
+        firstFluent = False
       tpLabel = Label(parent, text=headings[i],
                 borderwidth=2, relief='raised', anchor='w')
       tpLabel.pack(fill='x')
@@ -103,7 +108,7 @@ class EditFrame(Frame):
       )
       frame = Frame(parent)
       frame.pack(fill='x')
-      tFrame(frame, crntTableData, height=1, callback=self.callback, name=predNames[i])
+      tFrame(frame, crntTableData, callback=self.callback, name=predNames[i])
       self.listofTP[predNames[i]] = frame
 
   def _parseTableData(self, data, attrName, attrVals):
@@ -117,7 +122,7 @@ class EditFrame(Frame):
     '''
     tableHeadings = ['timestep']+list(attrVals.keys())
     if 'function_value' not in attrVals.keys():
-      tableHeadings += ['True/False']
+      tableHeadings += ['Boolean Value']
     crntTableData = [tableHeadings]
     if attrName in list(data.keys()):
       crntTableData = crntTableData+[data[attrName][-1]]
@@ -139,7 +144,7 @@ class EditFrame(Frame):
       crntTableData = self._parseTableData(
         self.tableData, predNames[i], predParameters[i]
       )
-      tFrame(crntFrame, crntTableData, height=1,
+      tFrame(crntFrame, crntTableData,
             callback=self.callback, name=predNames[i])
 
   def callback(self, attrName):
@@ -185,7 +190,7 @@ class EditFrame(Frame):
       predicateHeaders = list(self.predicateData[tableName].keys())
       editHeadings = list(self.predicateData[tableName].keys())
       if 'function_value' not in predicateHeaders:
-        editHeadings += ['True/False']
+        editHeadings += ['Boolean Value']
       result = [editHeadings, editVals]
     return result
 
@@ -220,7 +225,7 @@ class EditFrame(Frame):
       if editValue == 'function_value':
         entry = DecimalEntry(parent)
         entry.insert(0, editValues[1][i])
-      elif editValue == 'True/False':
+      elif editValue == 'Boolean Value':
         vals = ['True','False']
         idx = vals.index(editValues[1][i])
         entry = ttk.Combobox(parent, values=vals)
@@ -248,10 +253,7 @@ class EditFrame(Frame):
       'crnt': crntVals,
       'new': newVals
     }
-    if facts['new']['is_negative']:
-      self.knowledgeBase.delete(facts)
-    else:
-      self.knowledgeBase.update(facts)
+    self.knowledgeBase.update(facts)
     self.selectedTables[self.selectedAttrName] = 0
 
   def _prepareRecords(self, selectedAttrName, type='select'):
@@ -275,7 +277,7 @@ class EditFrame(Frame):
       else:
         newTf = self._parseIsNegative(self.entriesList[-1].get())
       vals['is_negative'] = newTf
-      headings.remove('True/False')
+      headings.remove('Boolean Value')
       editedVals.pop(-1)
     # convert other data to 'values'
     values = []
