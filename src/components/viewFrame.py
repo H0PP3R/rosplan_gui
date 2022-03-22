@@ -55,7 +55,7 @@ class ViewFrame(Frame):
       crntTableData = self._parseTableData(
         self.tableData, predNames[i], predParameters[i]
       )
-      tFrame(crntFrame, crntTableData, height=len(crntTableData))
+      tFrame(crntFrame, crntTableData)
 
   def _createPredicateFrames(self, parent):
     '''
@@ -81,7 +81,7 @@ class ViewFrame(Frame):
       crntTableData = self._parseTableData(
         self.tableData, predNames[i], predParameters[i]
       )
-      tFrame(cFrame.getSubFrame(), crntTableData, height=len(crntTableData))
+      tFrame(cFrame.getSubFrame(), crntTableData)
     return predicatesFrame
 
   def _createCollapsibleFrame(self, parent, headerText):
@@ -107,7 +107,7 @@ class ViewFrame(Frame):
     '''
     tableHeadings = ['timestep']+list(attrVals.keys())
     if 'function_value' not in attrVals.keys():
-      tableHeadings += ['True/False']
+      tableHeadings += ['Boolean Value']
     crntTableData = [tableHeadings]
     if attrName in list(data.keys()):
       crntTableData = crntTableData+data[attrName]
