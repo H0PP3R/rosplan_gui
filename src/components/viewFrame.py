@@ -19,7 +19,7 @@ class ViewFrame(Frame):
     '''
     Frame.__init__(self, parent)
     self.listofCP = []
-    self.controller = controller
+    self.showFrame = controller
     self.tableData = data['tableData']
     self.predicateData = data['predicateData']
     self.headerText = data['headerText']
@@ -36,7 +36,7 @@ class ViewFrame(Frame):
     predicatesFrame.pack(fill='x')
 
     button = Button(self, text ='Edit/Delete',
-                    command=lambda: self.controller.showFrame('EditFrame'))
+                    command=lambda: self.showFrame('EditFrame'))
     button.pack()
 
   def updateCFrame(self):
@@ -107,7 +107,7 @@ class ViewFrame(Frame):
     '''
     tableHeadings = ['timestep']+list(attrVals.keys())
     if 'function_value' not in attrVals.keys():
-      tableHeadings += ['Boolean Value']
+      tableHeadings += ['boolean value']
     crntTableData = [tableHeadings]
     if attrName in list(data.keys()):
       crntTableData = crntTableData+data[attrName]
