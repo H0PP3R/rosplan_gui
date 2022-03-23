@@ -5,7 +5,7 @@ class TableFrame(Frame):
   Widget that creates a table.
   Extension of the Frame widget.
   '''
-  def __init__(self, parent, data, height=5, callback=None, name='TablePane'):
+  def __init__(self, parent, data, callback=None, name='TablePane'):
     '''
     Constructor, sets the parameters as class variables
     @param self: the class itself
@@ -18,7 +18,7 @@ class TableFrame(Frame):
     Frame.__init__(self, parent)
     self.name=name
     self.data = data
-    self.height = height
+    self.height = 0
     self.callback = callback
     self.numRecords = 0
     self.selectedRowValues = []
@@ -48,6 +48,7 @@ class TableFrame(Frame):
       for i in range(1, len(data)):
           self.table.insert(parent='',index='end',iid=i, text='',values=(tuple(data[i])))
           self.numRecords += 1
+    self.table.configure(height=self.numRecords + 1)
 
   def _selectItem(self, a):
     '''
@@ -57,8 +58,10 @@ class TableFrame(Frame):
     '''
     # gets all the values of the selected row
     self.selectedRowValues = self.table.item(self.table.selection())['values']
-    if self.numRecords < 1 or len(self.selectedRowValues) < 1:
+    if self.numRecords < 1 :
       '''when table is empty or when the heading of the table is selected'''
+    if len(self.selectedRowValues) < 1:
+      pass
     else:
       if self.callback != None:
         self.callback(self.name)

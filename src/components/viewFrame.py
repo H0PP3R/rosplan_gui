@@ -1,4 +1,4 @@
-from tkinter import Frame, Button
+from tkinter import Frame, Button, Label
 
 from .collapsibleFrame import CollapsibleFrame as cFrame
 from .tableFrame import TableFrame as tFrame
@@ -19,7 +19,7 @@ class ViewFrame(Frame):
     '''
     Frame.__init__(self, parent)
     self.listofCP = []
-    self.controller = controller
+    self.showFrame = controller
     self.tableData = data['tableData']
     self.predicateData = data['predicateData']
     self.headerText = data['headerText']
@@ -36,7 +36,7 @@ class ViewFrame(Frame):
     predicatesFrame.pack(fill='x')
 
     button = Button(self, text ='Edit/Delete',
-                    command=lambda: self.controller.showFrame('EditFrame'))
+                    command=lambda: self.showFrame('EditFrame'))
     button.pack()
 
   def updateCFrame(self):
@@ -55,7 +55,7 @@ class ViewFrame(Frame):
       crntTableData = self._parseTableData(
         self.tableData, predNames[i], predParameters[i]
       )
-      tFrame(crntFrame, crntTableData, height=len(crntTableData))
+      tFrame(crntFrame, crntTableData)
 
   def _createPredicateFrames(self, parent):
     '''
@@ -69,14 +69,19 @@ class ViewFrame(Frame):
     predicatesFrame = Frame(parent)
 
     predicateHeaders = self.headerText
+    firstFluent = True
     for i in range(len(self.predNames)):
+      if 'function_value' in self.predicateData[self.predNames[i]] and firstFluent:
+        l = Label(predicatesFrame, text='Numeric Fluents')
+        l.pack(fill='x')
+        firstFluent = False
       cFrame = self._createCollapsibleFrame(predicatesFrame, predicateHeaders[i])
       self.listofCP.append(cFrame)
       # Parse current predicate propositional data and show as a table
       crntTableData = self._parseTableData(
         self.tableData, predNames[i], predParameters[i]
       )
-      tFrame(cFrame.getSubFrame(), crntTableData, height=len(crntTableData))
+      tFrame(cFrame.getSubFrame(), crntTableData)
     return predicatesFrame
 
   def _createCollapsibleFrame(self, parent, headerText):
@@ -102,7 +107,7 @@ class ViewFrame(Frame):
     '''
     tableHeadings = ['timestep']+list(attrVals.keys())
     if 'function_value' not in attrVals.keys():
-      tableHeadings += ['True/False']
+      tableHeadings += ['boolean value']
     crntTableData = [tableHeadings]
     if attrName in list(data.keys()):
       crntTableData = crntTableData+data[attrName]

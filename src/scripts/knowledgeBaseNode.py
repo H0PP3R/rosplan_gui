@@ -216,7 +216,7 @@ class KnowledgeBaseNode():
     knowledgeItem = self._parseUpdateRequest(facts['crnt'])
     kus.update_type += np.array(kus.REMOVE_KNOWLEDGE).tostring()
     kus.knowledge.append(knowledgeItem)
-
+    
     self._sendToServer(kus)
     self.kus = KnowledgeUpdateServiceArrayRequest()
 

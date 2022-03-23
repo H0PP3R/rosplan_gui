@@ -2,6 +2,7 @@ import copy
 from tkinter import Entry, Label, Frame, Button, StringVar, ttk
 from tkinter.messagebox import askyesno
 from diagnostic_msgs.msg import KeyValue
+from tkinter.messagebox import showinfo
 
 from .tableFrame import TableFrame as tFrame
 from .decimalEntry import DecimalEntry
@@ -24,7 +25,7 @@ class EditFrame(Frame):
     Frame.__init__(self, parent)
     self.listofTP = {}
     self.entriesList = []
-    self.controller = controller
+    self.showFrame = controller
     self.tableData = data['tableData']
     self.predicateData = data['predicateData']
     self.headerText = data['headerText']
@@ -62,9 +63,13 @@ class EditFrame(Frame):
     before updating
     @param self: the class itself
     '''
-    ask = askyesno(title='confirmation', message='Confirm your changes')
-    if ask:
-      self._updateRecord()
+    if len(self.editValues) > 0:
+      ask = askyesno(title='confirmation', message='Confirm your changes')
+      if ask:
+        self._updateRecord()
+        self.selectedTables[self.selectedAttrName] = 0
+    else:
+      showinfo("", "Please select a predicate data to update")
 
   def _createButtons(self, parent):
     '''
@@ -82,7 +87,7 @@ class EditFrame(Frame):
     submitButton = Button(buttonFrame, text='Apply', command=self._confirm)
     submitButton.pack(in_=top, side='left')
     switchFrameButton = Button(buttonFrame, text ='View',
-                              command=lambda: self.controller.showFrame('ViewFrame'))
+                              command=lambda: self.showFrame('ViewFrame'))
     switchFrameButton.pack(in_=top, side='left')
 
   def _createTableFrames(self, parent):
@@ -94,7 +99,12 @@ class EditFrame(Frame):
     predNames = self.predNames
     predParameters = self.predParameters
     headings = self.headerText
+    firstFluent = True
     for i in range(len(self.predNames)):
+      if 'function_value' in self.predicateData[self.predNames[i]] and firstFluent:
+        l = Label(parent, text='Numeric Fluents')
+        l.pack(fill='x')
+        firstFluent = False
       tpLabel = Label(parent, text=headings[i],
                 borderwidth=2, relief='raised', anchor='w')
       tpLabel.pack(fill='x')
@@ -103,7 +113,8 @@ class EditFrame(Frame):
       )
       frame = Frame(parent)
       frame.pack(fill='x')
-      tFrame(frame, crntTableData, height=1, callback=self.callback, name=predNames[i])
+      tFrame(frame, crntTableData, callback=self.callback, 
+              name=predNames[i])
       self.listofTP[predNames[i]] = frame
 
   def _parseTableData(self, data, attrName, attrVals):
@@ -117,7 +128,7 @@ class EditFrame(Frame):
     '''
     tableHeadings = ['timestep']+list(attrVals.keys())
     if 'function_value' not in attrVals.keys():
-      tableHeadings += ['True/False']
+      tableHeadings += ['boolean value']
     crntTableData = [tableHeadings]
     if attrName in list(data.keys()):
       crntTableData = crntTableData+[data[attrName][-1]]
@@ -139,7 +150,7 @@ class EditFrame(Frame):
       crntTableData = self._parseTableData(
         self.tableData, predNames[i], predParameters[i]
       )
-      tFrame(crntFrame, crntTableData, height=1,
+      tFrame(crntFrame, crntTableData,
             callback=self.callback, name=predNames[i])
 
   def callback(self, attrName):
@@ -155,6 +166,7 @@ class EditFrame(Frame):
         self.selectedTables[self.prvSelected] = 0
       else:
         if list(self.selectedTables.values()).count(1) > 0:
+          x = self.listofTP[self.prvSelected].winfo_children()
           self.listofTP[self.prvSelected].winfo_children()[0].deselect()
           self.selectedTables[self.prvSelected] = 0
 
@@ -184,7 +196,7 @@ class EditFrame(Frame):
       predicateHeaders = list(self.predicateData[tableName].keys())
       editHeadings = list(self.predicateData[tableName].keys())
       if 'function_value' not in predicateHeaders:
-        editHeadings += ['True/False']
+        editHeadings += ['boolean value']
       result = [editHeadings, editVals]
     return result
 
@@ -210,6 +222,7 @@ class EditFrame(Frame):
     @param parent: the frame in which this widget will be in
     @param editValues: values to update in the frame
     '''
+    self.entriesList = []
     for widgets in parent.winfo_children():
       widgets.destroy()
     for i, editValue in enumerate(editValues[0]):
@@ -218,7 +231,7 @@ class EditFrame(Frame):
       if editValue == 'function_value':
         entry = DecimalEntry(parent)
         entry.insert(0, editValues[1][i])
-      elif editValue == 'True/False':
+      elif editValue == 'boolean value':
         vals = ['True','False']
         idx = vals.index(editValues[1][i])
         entry = ttk.Combobox(parent, values=vals)
@@ -246,7 +259,10 @@ class EditFrame(Frame):
       'crnt': crntVals,
       'new': newVals
     }
-    self.knowledgeBase.update(facts)
+    if facts['new']['is_negative']:
+      self.knowledgeBase.delete(facts)
+    else:
+      self.knowledgeBase.update(facts)
 
   def _prepareRecords(self, selectedAttrName, type='select'):
     '''
@@ -269,7 +285,7 @@ class EditFrame(Frame):
       else:
         newTf = self._parseIsNegative(self.entriesList[-1].get())
       vals['is_negative'] = newTf
-      headings.remove('True/False')
+      headings.remove('boolean value')
       editedVals.pop(-1)
     # convert other data to 'values'
     values = []
@@ -300,4 +316,8 @@ class EditFrame(Frame):
     @param trueFalse: string of either 'True' or 'False'
     @return boolean that is the opposite of the parameter trueFalse
     '''
-    return not bool(trueFalse)
+    if trueFalse == 'True':
+      trueFalse = True
+    else:
+      trueFalse = False
+    return not trueFalse
