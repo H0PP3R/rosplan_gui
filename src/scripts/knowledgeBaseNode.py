@@ -4,6 +4,7 @@ from rosplan_knowledge_msgs.srv import KnowledgeUpdateServiceArray, KnowledgeUpd
 from rosplan_knowledge_msgs.srv import GetDomainAttributeService, GetDomainAttributeServiceResponse
 from rosplan_knowledge_msgs.srv import GetAttributeService, GetAttributeServiceResponse
 from rosplan_knowledge_msgs.msg import StatusUpdate, KnowledgeItem
+from rosplan_knowledge_msgs.srv import GetInstanceService, GetDomainTypeService
 
 class KnowledgeBaseNode():
   '''
@@ -30,7 +31,9 @@ class KnowledgeBaseNode():
       "propositions": f"{basePath}/state/propositions",
       "numericFluents": f"{basePath}/state/functions",
       "statusUpdate":f"{basePath}/status/update",
-      "update": f"{basePath}/update_array"
+      "update": f"{basePath}/update_array",
+      "instances": f"{basePath}/state/instances",
+      "types": f"{basePath}/domain/types"
     }
     self.knowledgeTypes = {}
     self.kus = KnowledgeUpdateServiceArrayRequest()
@@ -46,6 +49,8 @@ class KnowledgeBaseNode():
     rospy.wait_for_service(self.servicePaths["propositions"])
     rospy.wait_for_service(self.servicePaths["numericFluents"])
     rospy.wait_for_service(self.servicePaths["update"])
+    rospy.wait_for_service(self.servicePaths["instances"])
+    rospy.wait_for_service(self.servicePaths["types"])
     self._statusUpdateListener(self._callback)
     try:
       self._getKBPredicates = rospy.ServiceProxy(
@@ -62,6 +67,12 @@ class KnowledgeBaseNode():
       )
       self._updateServer = rospy.ServiceProxy(
         self.servicePaths["update"], KnowledgeUpdateServiceArray
+      )
+      self._getKBInstances = rospy.ServiceProxy(
+        self.servicePaths["instances"], GetInstanceService
+      )
+      self._getKBTypes = rospy.ServiceProxy(
+        self.servicePaths["types"], GetDomainTypeService
       )
     except rospy.ServiceException as exception:
       print(f'Service call failed: {exception}')
@@ -177,13 +188,31 @@ class KnowledgeBaseNode():
     self.numPropositions = self._parseResponse(self._getKBNumPropositions())
     return self.numPropositions
 
+  def getTypeInstances(self, t):
+    '''
+    Function to return instances in the KB of a specific type
+    @param self: the class itself
+    @return list of existing instances in the KB
+    '''
+    resp = self._getKBInstances(t, False, False).instances
+    return resp
+
+  def getTypes(self):
+    '''
+    Function to get instance types from the KB
+    @param self: the class itself
+    @return list of string instance types
+    '''
+    resp = self._getKBTypes().types
+    return resp
+
   def _statusUpdateListener(self, _callback):
     '''
     Procedure that initialises a status update listener
     @param self: the class itself
     @param _callback: a function to call if there is a status update
     '''
-    rospy.init_node('listener', anonymous=True)
+    # rospy.init_node('listener', anonymous=True)
     try:
       rospy.Subscriber(self.servicePaths['statusUpdate'], StatusUpdate, _callback)
     except rospy.ServiceException as exception:
