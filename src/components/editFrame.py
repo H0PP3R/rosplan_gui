@@ -36,6 +36,8 @@ class EditFrame(Frame):
     self.prvSelected = None
     self.editValues = []
     self.selectedAttrName = ''
+    self.instances = self.getInstances()
+    self.failed = {}
     self._populateFrame()
 
   def _populateFrame(self):
@@ -64,12 +66,42 @@ class EditFrame(Frame):
     @param self: the class itself
     '''
     if len(self.editValues) > 0:
-      ask = askyesno(title='confirmation', message='Confirm your changes')
+      ask = askyesno(title='Confirmation', message='Confirm your changes')
       if ask:
-        self._updateRecord()
-        self.selectedTables[self.selectedAttrName] = 0
+        if self._updateRecord():
+          # When the KB does have the instance added
+          self.selectedTables[self.selectedAttrName] = 0
+        else:
+          # When the KB does not have the instance added
+          failed = self.failed
+          showinfo("",
+            f"New instance {failed['instanceHeading']} '{failed['value']}' not in the knowledge base\nTry {self.instances[failed['validInstances']]}")
     else:
+      # When there is no selected table record
       showinfo("", "Please select a predicate data to update")
+
+  def _checkInstance(self, facts):
+    '''
+    Function to return whether the fact's instances exist in
+    the current KB's instances.
+    @param self: the class itself
+    @return true if the instance does exist, false if it does not
+    '''
+    name = facts['attribute_name']
+    factKeys = facts['values']
+    predicates = self.predicateData[name]
+    failed = {}
+    for i, k in enumerate(predicates.keys()):
+      for j in range(len(factKeys)):
+        if factKeys[j].key == k:
+          if factKeys[j].value not in self.instances[predicates[k]]:
+            failed['instanceHeading'] = k
+            failed['validInstances'] = predicates[k]
+            failed['value'] = factKeys[j].value
+            self.failed = failed
+            return False
+    # only return when every instance type in predicate is checked
+    return True
 
   def _createButtons(self, parent):
     '''
@@ -249,9 +281,10 @@ class EditFrame(Frame):
 
   def _updateRecord(self):
     '''
-    Procedure that sends the records to update to the KnowledgeBaseNode
-    procedure that updates the KnowledgeBase state
+    Function that returns true if the new instances exist in the KB
+    if so update the KB, if not return false and do nothing
     @param self: the class itself
+    @return boolean representing whether the KB is to be updated or not
     '''
     crntVals = self._prepareRecords(self.selectedAttrName, type='select')
     newVals = self._prepareRecords(self.selectedAttrName, type='edit')
@@ -259,10 +292,15 @@ class EditFrame(Frame):
       'crnt': crntVals,
       'new': newVals
     }
-    if facts['new']['is_negative']:
-      self.knowledgeBase.delete(facts)
+    # Check if new instances exist in the KB
+    if self._checkInstance(facts['new']):
+      if facts['new']['is_negative']:
+        self.knowledgeBase.delete(facts)
+      else:
+        self.knowledgeBase.update(facts)
+      return True
     else:
-      self.knowledgeBase.update(facts)
+      return False
 
   def _prepareRecords(self, selectedAttrName, type='select'):
     '''
@@ -287,6 +325,8 @@ class EditFrame(Frame):
       vals['is_negative'] = newTf
       headings.remove('boolean value')
       editedVals.pop(-1)
+    else:
+      vals['is_negative'] = False
     # convert other data to 'values'
     values = []
     for i, heading in enumerate(headings):
@@ -321,3 +361,18 @@ class EditFrame(Frame):
     else:
       trueFalse = False
     return not trueFalse
+
+  def getInstances(self):
+    '''
+    Function to return formatted data about the KB instance types
+    @param self: the class itself
+    @return a dictionary of KB instance types and their instances
+    '''
+    result = {}
+    types = self.knowledgeBase.getTypes()
+    for t in types:
+      if t not in result:
+        result[t] = None
+      tInstance = self.knowledgeBase.getTypeInstances(t)
+      result[t] = tInstance
+    return result

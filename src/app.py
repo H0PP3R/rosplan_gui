@@ -20,6 +20,7 @@ class App(Tk):
     @param self: the class itself
     '''
     Tk.__init__(self)
+    self.title('ROSPlan Knowledge Base GUI')
     self.tableData = None
     self.predicateData = None
     self.headerText = None
