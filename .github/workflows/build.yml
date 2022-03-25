@@ -1,0 +1,56 @@
+name: build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+env:
+  ROS_VERSION: melodic
+jobs:
+  build-linux:
+    runs-on: ubuntu-18.04
+    strategy:
+      max-parallel: 5
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: Add conda to system path
+      run: |
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
+        $CONDA/bin/conda env update --file environment.yml --name base
+        echo $CONDA/bin >> $GITHUB_PATH
+    - name: Install dependencies
+      run: |
+        conda env update --file environment.yml --name base
+        sudo apt install flex bison freeglut3-dev libbdd-dev python-catkin-tools ros-$ROS_DISTRO-tf2-bullet
+    - name: Setup ROS
+      run: |
+        sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+        sudo apt install curl # if you haven't already installed curl
+        curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+        sudo apt update
+        sudo apt install ros-melodic-desktop-full
+        source /opt/ros/melodic/setup.bash
+        sudo apt install python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential
+        sudo apt install python-rosdep
+        sudo rosdep init
+        rosdep update
+    - name: Create catkin workspace
+      run: |
+        conda activate base
+        mkdir -p ROSPlan/src
+        cd ROSPlan/src
+    - name: Clone ROSPlan repository
+      uses: actions/checkout@v2
+      with:
+        repository: KCL-Planning/ROSPlan
+        path: ROSPlan/src
+        ref: master
+    - name: Build workspace
+      working-directory: ROSPlan/
+      run: catkin build
+    - name: Launch roslaunch file
