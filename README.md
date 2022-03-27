@@ -6,7 +6,7 @@ Currently, users can view KB data as it updates. Users may also update and remov
 ## Installation
 
 ### Pre-requisites
-Reccommended setup: Ubuntu 18.04 and ros-melodic 
+Reccommended setup: Ubuntu 18.04 and ros-melodic \
 Required software: [ROSPlan](https://github.com/KCL-Planning/ROSPlan)
 
 (optional) A package manager: either [Anaconda](https://www.anaconda.com/) or the [virtualenv](https://pypi.org/project/virtualenv/).
