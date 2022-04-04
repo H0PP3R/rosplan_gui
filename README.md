@@ -51,3 +51,5 @@ Run the main file
 ```
 python <path-to-repository>/src/main.py
 ```
+
+Call  wanted ROSPlan rosservices e.g. problem generation, planning or plan execution
