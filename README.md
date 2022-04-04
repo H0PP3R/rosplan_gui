@@ -19,7 +19,7 @@ git clone https://github.com/H0PP3R/rosplan_gui
 
 Navigate inside the repository directory
 ```
-cd rosplan\_gui
+cd rosplan_gui
 ```
 
 #### Install Dependencies
