@@ -25,7 +25,7 @@ cd rosplan_gui
 #### Install Dependencies
 If using Anaconda:
 ```
-conda env create --name <envname> --file=environments.yml
+conda env create --name <envname> --file=environment.yml
 ```
 
 If using virtualenv
