@@ -1,5 +1,5 @@
 # rosplan_gui
-This application acts as an GUI to the [ROSPlan](https://github.com/KCL-Planning/ROSPlan) Knowledge Base. 
+This application acts as an GUI to the [ROSPlan](https://github.com/KCL-Planning/ROSPlan) Knowledge Base. This is the deliverable product of the [master's dissertation](https://drive.google.com/file/d/1lB4H3_WgeYnLM9kudNOVUC_XIVxu1e5o/view?usp=sharing).
 
 Currently, users can view KB data as it updates. Users may also update and remove the most recent predicate data through the application. The user cannot currently add new instances or proposition data: this is in development.
 
